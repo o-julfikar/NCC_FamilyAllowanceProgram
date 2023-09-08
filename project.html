@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Project - List of Family Card Holders - NCC</title>
+
+    <link rel="stylesheet" href="css/project.css">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+  </head>
+  <body>
+    <div class="main">
+      <div class="left">
+        <div class="left-bg">
+          <input type="text" name="txtSearch" id="txtSearch" placeholder="Search">
+          <div class="table-container">
+            <table id="tableBeneficiaries" class="beneficiaries-table">
+              <thead>
+                <tr>
+                  <th>
+                    ক্রঃ নংঃ
+                  </th>
+                  <th>
+                    সিটি কর্পোরেশন
+                  </th>
+                  <th>
+                    ওয়ার্ড নম্বর
+                  </th>
+                  <th>
+                    বাড়ী বা মহল্লা
+                  </th>
+                  <th>
+                    উপকারভোগীর নাম
+                  </th>
+                  <th>
+                    এনআইডি নম্বর
+                  </th>
+                  <th>
+                    মোবাইল নম্বর
+                  </th>
+                  <th>
+                    জন্ম তারিখ (যদি থাকে)
+                  </th>
+                  <th>
+                    পেশা
+                  </th>
+                  <th>
+                    স্বামী বা স্ত্রীর এনআইডি
+                  </th>
+                  <th>
+                    অবিবাহিত হলে পিতার এনআইডি
+                  </th>
+                </tr>
+                <tr>
+                  <th>১</th>
+                  <th>২</th>
+                  <th>৩</th>
+                  <th>৪</th>
+                  <th>৫</th>
+                  <th>৬</th>
+                  <th>৭</th>
+                  <th>৮</th>
+                  <th>৯</th>
+                  <th>১০</th>
+                  <th>১১</th>
+                </tr>
+              </thead>
+              <tbody>
+
+              </tbody>
+            </table>
+          </div>
+          <div class="input-container">
+            <div class="input-row-1">
+              <select name="cboCityCorporation" id="cboCityCorporation" required>
+                <option value="Barishal City Corporation">Barishal City Corporation</option>
+                <option value="Chittagong City Corporation">Chittagong City Corporation</option>
+                <option value="Comilla City Corporation">Comilla City Corporation</option>
+                <option value="Dhaka North City Corporation">Dhaka North City Corporation</option>
+                <option value="Dhaka South City Corporation">Dhaka South City Corporation</option>
+                <option value="Gazipur City Corporation">Gazipur City Corporation</option>
+                <option selected value="Narayanganj City Corporation">Narayanganj City Corporation</option>
+                <option value="Khulna City Corporation">Khulna City Corporation</option>
+                <option value="Mymensingh City Corporation">Mymensingh City Corporation</option>
+                <option value="Rajshahi City Corporation">Rajshahi City Corporation</option>
+                <option value="Rangpur City Corporation">Rangpur City Corporation</option>
+                <option value="Sylhet City Corporation">Sylhet City Corporation</option>
+              </select>
+              <input type="number" name="numWard" id="numWard" placeholder="ওয়ার্ড নম্বর" required>
+              <input type="text" name="txtArea" id="txtArea" placeholder="বাড়ী বা মহল্লা" required>
+            </div>
+            <div class="input-row-2">
+              <input type="text" name="txtName" id="txtName" placeholder="উপকারভোগীর নাম" required>
+              <input noSpinner type="number" name="numNID" id="numNID" placeholder="এনআইডি নম্বর" required>
+              <input noSpinner type="tel" name="telPhone" id="telPhone" placeholder="মোবাইল নম্বর" required>
+              <input type="date" name="dateBirthdate" id="dateBirthdate" placeholder="জন্ম তারিখ">
+              <input type="text" name="txtOccupation" id="txtOccupation" placeholder="পেশা" required>
+            </div>
+            <div class="input-row-3">
+              <input noSpinner type="number" name="numSpouseNID" id="numSpouseNID" placeholder="স্বামী বা স্ত্রীর এনআইডি">
+              <input noSpinner type="number" name="numParentNID" id="numParentNID" placeholder="পিতার এনআইডি">
+              <button approve type="submit" id="btnInsert">Insert</button>
+            </div>
+          </div>
+          <div class="export-container">
+            <button type="submit" id="btnDownloadTXT">Download (as TXT)</button>
+            <button type="submit" id="btnDownloadCSV">Download (as CSV)</button>
+            <button type="submit" id="btnDownloadPDF">Download (as PDF)</button>
+            <button type="submit" id="btnPrint">Print</button>
+          </div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="right-top">
+          <button type="submit" id="btnDashboard" onclick="window.location='dashboard.html';">Dashboard</button>
+          <div class="table-container">
+            <table id="tableModerators">
+              <thead>
+                <tr>
+                  <th>Moderators</th>
+                </tr>
+              </thead>
+              <tbody>
+              </tbody>
+            </table>
+          </div>
+          <button type="submit" id="btnAddModerator">Add Moderator</button>
+        </div>
+        <button type="submit" id="btnLoadFromTxt">Load (from TXT)</button>
+        <button type="submit" id="btnLoadFromCSV" hidden>Load (from CSV)</button>
+        <button deny type="submit" id="btnDeleteProject">Delete Project</button>
+        <button type="submit" id="btnAdmin" onclick="window.location='admin.html';">Admin</button>
+        <button deny type="submit" id="btnLogout">Logout</button>
+      </div>
+    </div>
+    <script type="module" src="js/project.js"></script>
+  </body>
+</html>
+
+
+<!--javascript: document.getElementById("numWard").value = 11; document.getElementById("txtArea").value = "Paikpara"; document.getElementById("txtName").value = "Osman"; document.getElementById("numNID").value = 123; document.getElementById("telPhone").value = 01305245845; document.getElementById("dateBirthdate").value = "1987-03-14"; document.getElementById("txtOccupation").value = "Student"; document.getElementById("numSpouseNID").value = 456; document.getElementById("numParentNID").value = 789;-->

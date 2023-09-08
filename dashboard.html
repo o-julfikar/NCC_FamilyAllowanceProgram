@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Dashboard - List of Family Card Holders - NCC</title>
+
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+
+  </head>
+  <body>
+    <div class="main">
+      <div class="left">
+        <div class="left-project-wall-container">
+          <div class="new-project-container">
+            <button type="submit" class="close-button" id="btnClose">X</button>
+            <div class="new-project-input-container">
+              <input type="text" name="txtProjectName" id="txtProjectName" placeholder="Project Name">
+              <button approve type="submit" id="btnCreate">Create</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="right">
+        <div class="project-section">
+          <div class="table-container">
+            <table id="tableProjects">
+              <thead>
+                <tr>
+                  <th>Projects</th>
+                </tr>
+              </thead>
+              <tbody>
+
+              </tbody>
+            </table>
+          </div>
+          <button type="submit" id="btnNewProject">New Project</button>
+        </div>
+        <div class="account-section">
+          <button type="submit" id="btnAdmin">Admin</button>
+          <button deny type="submit" id="btnLogout">Logout</button>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="js/dashboard.js"></script>
+  </body>
+</html>

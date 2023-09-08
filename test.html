@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+  <body>
+
+
+    <button onclick="downloadPDF()">Download PDF</button>
+
+    <script>
+      function downloadPDF() {
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', 'generate_pdf.php', true); // Replace 'generate_pdf.php' with your PHP script URL
+
+        xhr.onload = function () {
+          if (xhr.status === 200) {
+            var response = JSON.parse(xhr.responseText);
+
+            // Decode the base64 PDF content
+            var pdfContentBase64 = response.pdf_content;
+            var pdfContent = atob(pdfContentBase64);
+
+            // Create a Blob from the decoded binary data
+            var pdfBlob = new Blob([pdfContent], { type: 'application/pdf' });
+
+            // Create a temporary URL for the Blob
+            var url = window.URL.createObjectURL(pdfBlob);
+
+            // Create a link element to trigger the download
+            var a = document.createElement('a');
+            a.href = url;
+            a.download = 'generated.pdf'; // Set the desired file name
+
+            // Trigger the download
+            a.click();
+
+            // Release the temporary URL
+            window.URL.revokeObjectURL(url);
+          }
+        };
+
+        xhr.send();
+      }
+    </script>
+  </body>
+</html>

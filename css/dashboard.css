@@ -1,0 +1,135 @@
+@import "index.css";
+
+img {
+  display: block;
+}
+
+.right {
+  flex-direction: column;
+  width: 30%;
+}
+
+.left {
+  width: 70%;
+}
+
+.project-section {
+  display: flex;
+  flex-direction: column;
+  height: 70%;);
+  margin-bottom: auto;
+  width: 100%;
+}
+
+.project-section > :not(:first-child) {
+  margin-top: 10px;
+}
+
+.project-section td {
+  /*overflow: hidden;*/
+}
+
+.account-section {
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  height: 20%;
+  width: 100%;
+  margin-top: auto;
+}
+
+.left-project-wall-container {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-image: url("../ncc.png");
+  background-size: 100% 100%;
+}
+
+.left-project-wall-container img {
+  height: 100%;
+  width: 100%;
+  border: none;
+}
+
+.new-project-container {
+  visibility: hidden;
+  /*backdrop-filter: blur(8px);*/
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: scale(1%);
+  transition: transform 0.2s;
+}
+
+.open-popup {
+  transform: translateY(0%) scale(100%);
+  visibility: visible;
+}
+
+.close-button {
+  height: calc((5vw + 5vh) / 2);
+  width: calc((5vw + 5vh) / 2);
+  border-radius: 50%;
+  border: 1px solid rgba(200, 40, 40, 1);
+  background-color: rgba(255, 255, 255, 0.5);
+  font-family: "Nunito", sans-serif;
+  /*font-size: calc((3vw + 3vh) / 2);*/
+  font-size: calc(15px + 0.390625vw);;
+  color: rgba(200, 40, 40, 1);
+  /*transform: translateY(50%);*/
+  margin-bottom: 10px;
+}
+
+.close-button:hover {
+  background-color: rgba(255, 255, 255, 1);
+  color: rgba(255, 100, 100);
+}
+
+.close-button:active {
+  background-color: rgba(200, 40, 40, 0.5);
+  color: rgba(255, 255, 255, 1);
+  border: 1px solid rgba(255, 100, 100);
+  border-radius: 48%;
+}
+
+.new-project-input-container {
+  padding: 30px 20px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(8px);
+}
+
+.new-project-input-container > :not(:first-child) {
+  margin-top: 10px;
+}
+
+.new-project-input-container > input {
+  padding: 10px 10px;
+  width: 20vw;
+}
+
+.new-project-input-container button {
+  padding: 10px;
+}
+
+.project-section,
+.account-section {
+  visibility: hidden;
+}
+
+.table-container {
+  min-height: calc(100% - 36px);
+  background-color: white;
+
+  box-shadow: inset 0 0 10px gray;
+}
+
+.table-container thead {
+  box-shadow: 0 0 20px 0 gray;
+}

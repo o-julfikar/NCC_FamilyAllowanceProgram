@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@800&display=swap');
+@import "popup.css";
+
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.main {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  width: 100%;
+  background-color: #888888;
+}
+
+.left {
+  display: flex;
+  height: 100%;
+}
+
+.right {
+  width: 100%;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-image: linear-gradient(to right, rgb(255, 196, 122), rgb(255, 144, 0));
+  z-index: 1;
+}
+
+.login-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-container input,
+.login-container button {
+  margin: 10px;
+  padding: 5px 10px;
+}
+
+button {
+  background-color: white;
+  color: rgba(30, 30, 30, 1);
+  border: 1px solid rgb(255, 144, 0);
+  cursor: pointer;
+  padding: 5px 15px;
+  border-radius: 5px;
+}
+
+button, tr {
+  transition-duration: 300ms;
+}
+
+button:hover {
+  background-color: rgb(255, 196, 122);
+  color: rgba(10, 10, 10, 1);
+}
+
+button:active {
+  background-color: rgba(255, 144, 0, 1);
+  border: 1px solid rgba(255, 196, 122, 1);
+}
+
+.table-container {
+  overflow: auto;
+  width: 100%;
+}
+
+table {
+  /*height: 100%;*/
+  width: 100%;
+  padding-bottom: 10px;
+  background-color: #222222;
+  border-collapse: collapse;
+}
+
+tbody tr {
+  border: 1px solid rgb(255, 144, 0);
+  border-left: none;
+  border-right: none;
+  background: rgba(255, 255, 255, 1);
+  cursor: pointer;
+}
+
+thead th {
+  padding: 5px 10px;
+}
+
+td {
+  padding: 5px 10px;
+}
+
+thead tr {
+  top: 0;
+  position: sticky;
+  background-color: rgba(255, 255, 255, 1);
+}
+
+tbody tr:hover {
+  border-left: 1px solid rgba(0, 0, 0, 0.5);
+  border-right: 1px solid rgba(0, 0, 0, 0.5);
+  background-color: rgb(255, 196, 122);
+}
+
+tbody tr:active {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: rgb(255, 196, 150);
+}
+
+button[deny] {
+  border: 1px solid rgba(255, 100, 100, 0.5);
+  color: red;
+}
+
+button[deny]:hover {
+  background-color: rgba(255, 100, 100, 0.8);
+  color: white;
+}
+
+button[deny]:active {
+  background-color: rgba(255, 0, 0, 1.0);
+  /*color: rgba(255, 150, 150, 1);*/
+}
+
+button[approve] {
+  border: 1px solid rgb(25, 150, 50);
+}
+
+button[approve]:hover {
+  background-color: rgb(100, 150, 100);
+  color: rgba(255, 255, 255, 1);
+}
+
+button[approve]:active {
+  background-color: rgb(0, 100, 0);
+  color: rgba(255, 255, 255, 1);
+}
+
+input[type=text]:focus {
+  outline: none;
+}
+
+.login-container {
+  visibility: hidden;
+}

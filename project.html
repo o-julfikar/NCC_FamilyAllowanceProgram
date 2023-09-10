@@ -12,43 +12,21 @@
       <div class="left">
         <div class="left-bg">
           <input type="text" name="txtSearch" id="txtSearch" placeholder="Search">
-          <div class="table-container">
+          <div class="table-container beneficiary-table-container">
             <table id="tableBeneficiaries" class="beneficiaries-table">
               <thead>
                 <tr>
-                  <th>
-                    ক্রঃ নংঃ
-                  </th>
-                  <th>
-                    সিটি কর্পোরেশন
-                  </th>
-                  <th>
-                    ওয়ার্ড নম্বর
-                  </th>
-                  <th>
-                    বাড়ী বা মহল্লা
-                  </th>
-                  <th>
-                    উপকারভোগীর নাম
-                  </th>
-                  <th>
-                    এনআইডি নম্বর
-                  </th>
-                  <th>
-                    মোবাইল নম্বর
-                  </th>
-                  <th>
-                    জন্ম তারিখ (যদি থাকে)
-                  </th>
-                  <th>
-                    পেশা
-                  </th>
-                  <th>
-                    স্বামী বা স্ত্রীর এনআইডি
-                  </th>
-                  <th>
-                    অবিবাহিত হলে পিতার এনআইডি
-                  </th>
+                  <th>ক্রঃ নংঃ</th>
+                  <th>সিটি কর্পোরেশন</th>
+                  <th>ওয়ার্ড নম্বর</th>
+                  <th>বাড়ী বা মহল্লা</th>
+                  <th>উপকারভোগীর নাম</th>
+                  <th>এনআইডি নম্বর</th>
+                  <th>মোবাইল নম্বর</th>
+                  <th>জন্ম তারিখ (যদি থাকে)</th>
+                  <th>পেশা</th>
+                  <th>স্বামী বা স্ত্রীর এনআইডি</th>
+                  <th>অবিবাহিত হলে পিতার এনআইডি</th>
                 </tr>
                 <tr>
                   <th>১</th>
@@ -85,19 +63,19 @@
                 <option value="Rangpur City Corporation">Rangpur City Corporation</option>
                 <option value="Sylhet City Corporation">Sylhet City Corporation</option>
               </select>
-              <input type="number" name="numWard" id="numWard" placeholder="ওয়ার্ড নম্বর" required>
+              <input type="text" name="numWard" id="numWard" placeholder="ওয়ার্ড নম্বর" required>
               <input type="text" name="txtArea" id="txtArea" placeholder="বাড়ী বা মহল্লা" required>
             </div>
             <div class="input-row-2">
               <input type="text" name="txtName" id="txtName" placeholder="উপকারভোগীর নাম" required>
-              <input noSpinner type="number" name="numNID" id="numNID" placeholder="এনআইডি নম্বর" required>
+              <input type="text" name="numNID" id="numNID" placeholder="এনআইডি নম্বর" required>
               <input noSpinner type="tel" name="telPhone" id="telPhone" placeholder="মোবাইল নম্বর" required>
               <input type="date" name="dateBirthdate" id="dateBirthdate" placeholder="জন্ম তারিখ">
               <input type="text" name="txtOccupation" id="txtOccupation" placeholder="পেশা" required>
             </div>
             <div class="input-row-3">
-              <input noSpinner type="number" name="numSpouseNID" id="numSpouseNID" placeholder="স্বামী বা স্ত্রীর এনআইডি">
-              <input noSpinner type="number" name="numParentNID" id="numParentNID" placeholder="পিতার এনআইডি">
+              <input type="text" name="numSpouseNID" id="numSpouseNID" placeholder="স্বামী বা স্ত্রীর এনআইডি">
+              <input type="text" name="numParentNID" id="numParentNID" placeholder="পিতার এনআইডি">
               <button approve type="submit" id="btnInsert">Insert</button>
             </div>
           </div>
@@ -111,7 +89,7 @@
       </div>
       <div class="right">
         <div class="right-top">
-          <button type="submit" id="btnDashboard" onclick="window.location='dashboard.html';">Dashboard</button>
+          <button type="submit" id="btnDashboard">Dashboard</button>
           <div class="table-container">
             <table id="tableModerators">
               <thead>
@@ -126,9 +104,9 @@
           <button type="submit" id="btnAddModerator">Add Moderator</button>
         </div>
         <button type="submit" id="btnLoadFromTxt">Load (from TXT)</button>
-        <button type="submit" id="btnLoadFromCSV" hidden>Load (from CSV)</button>
+        <button type="submit" id="btnLoadFromCSV" >Load (from CSV)</button>
         <button deny type="submit" id="btnDeleteProject">Delete Project</button>
-        <button type="submit" id="btnAdmin" onclick="window.location='admin.html';">Admin</button>
+        <button type="submit" id="btnAdmin">Admin</button>
         <button deny type="submit" id="btnLogout">Logout</button>
       </div>
     </div>

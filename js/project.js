@@ -2,6 +2,7 @@ import {auth} from "./auth.js";
 import {encodeSafeJSON} from "./json-engine.js";
 import * as MsgBox from "./popup-engine.js";
 import {logout} from "./account.js";
+import {BUTTONS} from "./popup-engine.js";
 
 const URL = new URLSearchParams(window.location.search);
 let containerMain = document.getElementsByClassName("main")[0];
@@ -31,6 +32,8 @@ let btnDeleteProject = document.getElementById("btnDeleteProject");
 let btnAdmin = document.getElementById("btnAdmin");
 let btnLogout = document.getElementById("btnLogout");
 
+
+
 let hideAllExceptClass = (className) => {
   for (let otherDivs of containerMain.children) if (otherDivs.className !== "popup-container") otherDivs.style.visibility = "hidden"
 };
@@ -45,9 +48,14 @@ if (!projectID) {
 btnAddModerator.onclick = openAddModeratorPopup;
 btnLogout.onclick = () => logout();
 btnDeleteProject.onclick = () => deleteProject(projectID);
+btnDashboard.onclick = () => open("dashboard.html", "_self");
+btnAdmin.onclick = () => open("admin.html", "_self");
 btnInsert.onclick = insertBeneficiary;
 btnLoadFromTxt.onclick = loadFromTxt;
 btnDownloadPDF.onclick = downloadAsPDF;
+btnDownloadTXT.onclick = downloadTXT;
+btnDownloadCSV.onclick = downloadCSV;
+
 
 let createMutuallyExclusiveFields = (...fields) => {
   for (let field of fields) field.oninput = () => {
@@ -405,7 +413,16 @@ function downloadAsPDF() {
           let response = encodeSafeJSON(e.target.result);
 
           switch (response.code) {
+            case 1:
+              const downloadLink = document.createElement("a");
+
+              downloadLink.setAttribute("href", response.data);
+              downloadLink.setAttribute("target", "_blank");
+              // downloadLink.setAttribute("download", filename);
+              downloadLink.click();
+              break;
             case 2:
+              console.log(response.data);
               MsgBox.showPopup(containerMain, "Error", response.data, MsgBox.FIELDS(), MsgBox.BUTTONS.CANCEL("OK"));
               break;
             default:
@@ -425,6 +442,70 @@ function downloadAsPDF() {
 
   downloadPDFRequest.open("POST", "project-export.php");
   downloadPDFRequest.send(requestFrom);
+}
+
+function downloadTXT() {
+  let downloadTXTRequest = new XMLHttpRequest();
+  downloadTXTRequest.onload = function () {
+    let response = encodeSafeJSON(this.responseText);
+    let data = response.data;
+
+    switch (response.code) {
+      case 1:
+        let downloadLink = document.createElement("a");
+        // const filename = this.getResponseHeader("Content-Disposition").split(";")[1].split("=")[1].trim().slice(1, -1);
+
+        downloadLink.setAttribute("href", data.url);
+        downloadLink.setAttribute("target", "_blank");
+        // downloadLink.setAttribute("download", data.filename);
+        downloadLink.click();
+        break;
+      case 2:
+        MsgBox.showPopup(containerMain, "Error", data, MsgBox.FIELDS(), BUTTONS.CANCEL("OK"));
+        break;
+      default:
+        MsgBox.showPopup(containerMain,"Error", "An unknown error occurred. Please try again later", MsgBox.FIELDS(), BUTTONS.CANCEL("OK"));
+        break;
+    }
+  }
+
+  downloadTXTRequest.open("POST", "project-export.php");
+  let formData = new FormData();
+  formData.append("method", "downloadTXT");
+  formData.append("args", `${projectID};`);
+  formData.append("submit", "submit");
+  downloadTXTRequest.send(formData);
+}
+
+function downloadCSV() {
+  let downloadCSVRequest = new XMLHttpRequest();
+  downloadCSVRequest.onload = function () {
+    let response = encodeSafeJSON(this.responseText);
+    let data = response.data;
+
+    switch (response.code) {
+      case 1:
+        const downloadLink = document.createElement("a");
+        downloadLink.setAttribute("href", data.url);
+        downloadLink.setAttribute("target", "_blank");
+        // downloadLink.setAttribute("download", data.filename);
+        downloadLink.click();
+        break;
+      case 2:
+        MsgBox.showPopup(containerMain, "Error", data,  MsgBox.FIELDS(), MsgBox.BUTTONS.CANCEL("OK"));
+        break;
+      default:
+        MsgBox.showPopup(containerMain, "Error", "An unknown error occurred", MsgBox.FIELDS(), MsgBox.BUTTONS.CANCEL("OK"));
+        break;
+    }
+  };
+
+  downloadCSVRequest.open("POST", "project-export.php");
+  let formData = new FormData();
+  formData.append("method", "downloadCSV");
+  formData.append("args", `${projectID};`);
+  formData.append("submit", "submit");
+  downloadCSVRequest.send(formData);
 }
 
 loadModerators();

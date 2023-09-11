@@ -31,7 +31,17 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background-image: linear-gradient(to right, rgb(255, 196, 122), rgb(255, 144, 0));
+  /*background-image: url("../img2.png");*/
+  background: linear-gradient(0deg, rgba(206, 206, 206, 0.2), rgba(206, 206, 206, 0.2)), url("../img_2.png");
+  background-size: 100% 100%;
+  /*background-image: linear-gradient(to right, rgb(147, 130, 74), rgb(175, 174, 157));*/
+  /*box-shadow: inset 0 0 10px yellow;*/
+  /*background-image:*/
+  /*  radial-gradient(ellipse at 10% 90%, #568a54 0%, transparent 55%),*/
+  /*  radial-gradient(ellipse at 90% 90%, #c02a2a 0%, transparent 55%),*/
+  /*  radial-gradient(ellipse at 90% 10%, #ff9000 0%, transparent 55%),*/
+  /*  radial-gradient(ellipse at 10% 10%, #ffc47a 0%, transparent 55%);*/
+  /*background-color: rgb(217, 217, 217);*/
   z-index: 1;
 }
 
@@ -48,25 +58,30 @@ body {
 
 button {
   background-color: white;
+  /*background-image: linear-gradient(to right, rgba(255, 196, 122, 0.26), rgba(255, 144, 0, 0.13));*/
   color: rgba(30, 30, 30, 1);
-  border: 1px solid rgb(255, 144, 0);
+  border: none;
+  border-bottom: 2px solid rgb(255, 144, 0);
   cursor: pointer;
   padding: 5px 15px;
   border-radius: 5px;
 }
 
-button, tr {
-  transition-duration: 300ms;
+/*button,*/
+td {
+  transition-duration: 200ms;
 }
 
 button:hover {
-  background-color: rgb(255, 196, 122);
+  background-color: rgb(255, 213, 161);
   color: rgba(10, 10, 10, 1);
 }
 
 button:active {
   background-color: rgba(255, 144, 0, 1);
-  border: 1px solid rgba(255, 196, 122, 1);
+  box-shadow: inset 0 2px 5px black;
+  padding-top: 7px;
+  border-bottom: none;
 }
 
 .table-container {
@@ -83,7 +98,7 @@ table {
 }
 
 tbody tr {
-  border: 1px solid rgb(255, 144, 0);
+  border: 1px solid rgba(255, 196, 122, 0.8);
   border-left: none;
   border-right: none;
   background: rgba(255, 255, 255, 1);
@@ -104,15 +119,51 @@ thead tr {
   background-color: rgba(255, 255, 255, 1);
 }
 
+/*tbody tr:hover {*/
+/*  border-left: 5px solid rgba(0, 0, 0, 0.5);*/
+/*  !*border-right: 1px solid rgba(0, 0, 0, 0.5);*!*/
+/*  background-color: rgb(255, 230, 199);*/
+/*}*/
+
+/*tbody tr:hover td {*/
+/*  padding-left: 5px;*/
+
+/*}*/
+
+/*tbody tr:active {*/
+/*  border: 1px solid rgba(0, 0, 0, 0.1);*/
+/*  background-color: rgb(255, 196, 150);*/
+/*}*/
+
 tbody tr:hover {
-  border-left: 1px solid rgba(0, 0, 0, 0.5);
-  border-right: 1px solid rgba(0, 0, 0, 0.5);
-  background-color: rgb(255, 196, 122);
+  /* border-left: 5px solid rgba(0, 0, 0, 0.5); */
+  /*border-right: 1px solid rgba(0, 0, 0, 0.5);*/
+  background-color: rgb(255, 230, 199);
+}
+
+tbody tr:hover td {
+  /* padding-left: 5px; */
 }
 
 tbody tr:active {
-  border: 1px solid rgba(0, 0, 0, 0.1);
+  /* border: 1px solid rgba(0, 0, 0, 0.1); */
   background-color: rgb(255, 196, 150);
+}
+
+tbody tr:active > td {
+  /* padding: 5px 10px; */
+  /* background-color: red; */
+  /* margin-left: -10px; */
+}
+
+tbody tr:active > td p {
+  border-left: 5px solid black;
+  padding-left: 0;
+  background-color: lawngreen;
+  /* padding: inherit 10px; */
+  /* background-color: red; */
+  /* margin-left: -10px; */
+
 }
 
 button[deny] {

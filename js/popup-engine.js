@@ -9,7 +9,7 @@ const FIELDS = (...ARGS) => ARGS;
 
 const INPUT = (type="text", label="") => {return {"type": type, "label": label}};
 
-function showPopup(parent, title, message, fields, buttons, htmlElement=null, isErrorMsg=false) {
+function showPopup(parent=null, title="Popup", message="Popup message", fields=FIELDS(), buttons=BUTTONS.NONE, htmlElement=null, isErrorMsg=false) {
   let templateDiv = document.createElement("div");
   let popupWindow = document.createElement("div");
   let popupTitle = document.createElement("h2");

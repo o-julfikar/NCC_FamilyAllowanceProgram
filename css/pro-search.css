@@ -24,6 +24,7 @@
   height: 25px;
   width: 500px;
   overflow: auto hidden;
+  cursor: text;
 }
 
 .search-text-container::-webkit-scrollbar {
@@ -41,7 +42,7 @@
   outline: none;
   border: none;
   height: calc(100% - 4px);
-  padding: 2px;
+  padding: 2px 5px 2px 10px;
   font-family: monospace;
 }
 
@@ -115,4 +116,23 @@
 
 .search-suggestion-container li:active {
 
+}
+
+.search-container-placeholder {
+  color: rgb(117, 117, 117);
+  position: fixed;
+  /*visibility: hidden;*/
+  margin: 0;
+  padding: 0;
+  top: -100px;
+  left: 1000px;
+  transform: scale(0%);
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s, left 0.3s;
+}
+
+.search-container-placeholder.enabled {
+  /*visibility: visible;*/
+  opacity: 1;
+  transform: scale(100%);
 }

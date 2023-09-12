@@ -8,6 +8,7 @@
   width: 70%;
   background-image: url("../img_2.png");
   background-size: 100% 100%;
+  min-width: 0;
 }
 
 .left-bg {
@@ -16,8 +17,8 @@
   flex-direction: column;
   height: calc(100% - 10px);
   padding: 5px;
-  /*background-color: rgba(0, 0, 0, 0.8);*/
   box-shadow: inset 0 0 20px yellow;
+  min-width: 0;
 }
 
 .right {
@@ -128,17 +129,29 @@ input[type=number][noSpinner]::-webkit-inner-spin-button {
   width: 20%;
 }
 
-#txtSearch {
-  padding: 10px 15px;
-  text-align: center;
-  border: none;
-  background: #dedede;
+.search-container {
+  width: 100%;
 }
 
-#txtSearch:focus {
-  outline: none;
-  background: white;
+.search-container .search-text-container {
+  width: calc(100% - 10px);
 }
+
+.search-container .search-suggestion-container {
+  /*box-shadow: 0 5px 10px black;*/
+}
+
+/*#txtSearch {*/
+/*  padding: 10px 15px;*/
+/*  text-align: center;*/
+/*  border: none;*/
+/*  background: #dedede;*/
+/*}*/
+
+/*#txtSearch:focus {*/
+/*  outline: none;*/
+/*  background: white;*/
+/*}*/
 
 .export-container {
   display: flex;
@@ -206,6 +219,7 @@ td {
 .beneficiaries-table thead {
   top: 0;
   position: sticky;
+  border-top: 1px solid;
 }
 
 .table-container.beneficiary-table-container {

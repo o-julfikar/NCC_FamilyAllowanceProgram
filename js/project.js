@@ -8,7 +8,7 @@ const URL = new URLSearchParams(window.location.search);
 let containerMain = document.getElementsByClassName("main")[0];
 let tableBeneficiaries = document.getElementById("tableBeneficiaries");
 let tableModerators = document.getElementById("tableModerators");
-let txtSearch = document.getElementById("txtSearch");
+let smartSearch = document.getElementById("txtSearch");
 let cboCityCorporation = document.getElementById("cboCityCorporation");
 let numWard = document.getElementById("numWard");
 let txtArea = document.getElementById("txtArea");
@@ -35,7 +35,11 @@ let btnLogout = document.getElementById("btnLogout");
 
 
 let hideAllExceptClass = (className) => {
-  for (let otherDivs of containerMain.children) if (otherDivs.className !== "popup-container") otherDivs.style.visibility = "hidden"
+  for (let otherDivs of containerMain.children) {
+    if (otherDivs.className !== className) {
+      otherDivs.style.visibility = "hidden"
+    }
+  }
 };
 
 let projectID = parseInt(URL.get("id"));
@@ -55,7 +59,12 @@ btnLoadFromTxt.onclick = loadFromTxt;
 btnDownloadPDF.onclick = downloadAsPDF;
 btnDownloadTXT.onclick = downloadTXT;
 btnDownloadCSV.onclick = downloadCSV;
-
+smartSearch.addEventListener("search", () => {
+  let queryString = smartSearch.getAttribute("queryString");
+  if (queryString) {
+    MsgBox.showPopup(containerMain, "Query String", queryString);
+  }
+})
 
 let createMutuallyExclusiveFields = (...fields) => {
   for (let field of fields) field.oninput = () => {
@@ -84,9 +93,9 @@ function loadBeneficiaries() {
           let rowBeneficiary = bodyBeneficiary.insertRow(-1);
           rowBeneficiary.insertCell(-1).innerHTML = (count++).toString();
 
-          for (const [k, v] of Object.entries(beneficiary)) {
+          for (const [, v] of Object.entries(beneficiary)) {
             let cellBeneficiary = rowBeneficiary.insertCell(-1);
-            cellBeneficiary.innerHTML = v ? v : "NA";
+            cellBeneficiary.innerHTML = v ? v.toString() : "NA";
           }
         }
         break;
@@ -96,7 +105,7 @@ function loadBeneficiaries() {
     }
   };
 
-  loadBeneficiariesRequest.open("GET", `beneficiaries.php?method=loadBeneficiaries&args=${projectID};${txtSearch.value}`)
+  loadBeneficiariesRequest.open("GET", `beneficiaries.php?method=loadBeneficiaries&args=${projectID};`);//${txtSearch.value}
   loadBeneficiariesRequest.send();
 }
 

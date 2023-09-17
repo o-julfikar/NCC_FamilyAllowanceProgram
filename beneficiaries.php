@@ -4,7 +4,8 @@
   include "auth_engine.php";
   include "query-helper.php";
 
-  $method = $args = "";
+  $method = "";
+  $args = [];
 
   function insertBeneficiary($conn, $user, $projectID, $cCorp, $wardNo, $area, $name, $nid, $phone, $birthdate, $occupation, $spouseNID, $parentNID): void {
     $sqlVerifyModerator = "SELECT * FROM project_moderators WHERE Moderator_ID=$user[id] AND Project_ID=$projectID";
@@ -24,10 +25,7 @@
 
       if ($rowBeneficiary = mysqli_fetch_assoc($resultBeneficiary)) {
         // Duplicate Entry
-        echo json_encode(array(
-          "code" => 8, # Duplicate entry
-          "data" => $rowBeneficiary
-        ));
+        echo createJSON(8, array_map(fn($v) => decode($v), $rowBeneficiary));
       } else {
         // New Entry
 
@@ -40,10 +38,7 @@
         ;
 
         if ($spouseNID != "" && $parentNID != "") {
-          echo json_encode(array(
-            "code" => 2,
-            "data" => "A beneficiary cannot register for both spouse and parent. Only unmarried beneficiary can add their parent's NID."
-          ));
+          echo createJSON(2, "A beneficiary cannot register for both spouse and parent. Only unmarried beneficiary can add their parent's NID.");
           return;
         } else if ($spouseNID == "") {
           $sqlInsertBeneficiary =
@@ -53,55 +48,58 @@
         }
 
         if (mysqli_query($conn, $sqlInsertBeneficiary)) {
-          echo json_encode(array(
-            "code" => 1,
-            "data" => "Beneficiary added successfully"
-          ));
+          echo createJSON(1, "Beneficiary added successfully");
         } else {
-          echo json_encode(array(
-            "code" => 2,
-            "data" => "An unknown error occurred while adding the beneficiary. Please try again later."
-          ));
+          echo createJSON(2, "An unknown error occurred while adding the beneficiary. Please try again later.");
         }
       }
 
     } else {
-      echo json_encode(array(
-        "code" => 4,
-        "data" => "You do not have access to this project."
-      ));
+      echo createJSON(4, "You do not have access to this project.");
     }
   }
-  function insertBeneficiariesFromTXT($conn, $user, $projectID, $inputFile): void {
-//    global $beneficiaryKeys;
-    $filename = $inputFile["tmp_name"];
-    $beneficiariesFile = fopen($filename, 'r');
-    $beneficiariesFileSize = filesize($filename);
-    $beneficiariesFileText = fread($beneficiariesFile, $beneficiariesFileSize);
-    $beneficiaries = explode("\n", $beneficiariesFileText);
-    for ($i = 0; $i < sizeof($beneficiaries); $i++) $beneficiaries[$i] = explode("\t", $beneficiaries[$i]);
 
-
+  function insertBeneficiariesFromTextFiles($conn, $user, $projectID, $offset, $limit, $inputFile, $delimiter="\t", $headerColumns=0, $headerRows=0): void {
+    $percentCounter = -1;
     $sqlVerifyModerator = "SELECT * FROM project_moderators WHERE Moderator_ID=$user[id] AND Project_ID=$projectID";
     if (mysqli_num_rows(mysqli_query($conn, $sqlVerifyModerator))) {
       // Moderator Verified
+
+      $filename = $inputFile["tmp_name"];
+      $beneficiariesFile = fopen($filename, 'r');
+      $beneficiariesFileSize = filesize($filename);
+      $beneficiariesFileText = fread($beneficiariesFile, $beneficiariesFileSize);
+      $beneficiaries = array_map(fn($line):array => explode($delimiter, $line), array_slice(explode("\n", $beneficiariesFileText), $headerRows));
+      $offset = preg_match("/\d+/", $offset)? intval($offset) : 0;
+      $limit = preg_match("/\d+/", $limit)? intval($limit) + 1 : 10000;
+
       $duplicateEntries = [];
+      $duplicateCount = 0;
       $failedEntries = [];
+      $failCount = 0;
       $successCount = 0;
 
       set_time_limit(9000);
-      foreach ($beneficiaries as $beneficiary) {
+      for ($i = $offset; $i < sizeof($beneficiaries) && $i < $offset + $limit; $i++) {
+
+        while (intval(($i - $offset) * 100 / ($limit)) > $percentCounter) {
+          $percentCounter++;
+          echo ".";
+
+          ob_flush();
+          flush();
+        }
+
+        $beneficiary = $beneficiaries[$i];
+        if ($headerColumns) $beneficiary = array_slice($beneficiary, $headerColumns);
+
         if (is_array($beneficiary) && sizeof($beneficiary) != 10) continue;
-        list($cCorp, $wardNo, $area, $name, $nid, $phone, $birthdate, $occupation, $spouseNID, $parentNID) = $beneficiary;
+//        println(implode(", ", $beneficiary));
 
-        // Encoding chars using URL Encoding
-        $uniCharArray = [$cCorp, $wardNo, $area, $name, $nid, $phone, $birthdate, $occupation, $spouseNID, $parentNID];
-        for ($i = 0; $i < sizeof($uniCharArray); $i++) $uniCharArray[$i] = urlencode($uniCharArray[$i]);
-        list($cCorp, $wardNo, $area, $name, $nid, $phone, $birthdate, $occupation, $spouseNID, $parentNID) = $uniCharArray;
+        list($cCorp, $wardNo, $area, $name, $nid, $phone, $birthdate, $occupation, $spouseNID, $parentNID) = encode(...$beneficiary);
+//        println(implode(", ", $beneficiary));
 
-        $nidArray = [];
-        foreach (array($nid, $spouseNID, $parentNID) as $_nid) if ($_nid && $_nid != "NA") $nidArray[] = "'$_nid'";
-        $nidGroup = implode(", ", $nidArray);
+        $nidGroup = group($nid, $spouseNID, $parentNID);
 
         $sqlGetBeneficiary =
           "SELECT * FROM beneficiary " .
@@ -110,12 +108,14 @@
 
         $resultBeneficiary = mysqli_query($conn, $sqlGetBeneficiary);
 
+
         // Remove NAs
         list($cCorp, $wardNo, $area, $name, $nid, $phone, $birthdate, $occupation, $spouseNID, $parentNID) = array_map(function ($v) {return $v == "NA"? "" : $v;}, array($cCorp, $wardNo, $area, $name, $nid, $phone, $birthdate, $occupation, $spouseNID, $parentNID));
 
         if ($rowBeneficiary = mysqli_fetch_assoc($resultBeneficiary)) {
           // Duplicate Entry
-          $duplicateEntries[] = $rowBeneficiary;
+//          $duplicateEntries[] = $rowBeneficiary;
+          $duplicateCount++;
         } else {
           // New Entry
 
@@ -125,8 +125,11 @@
             "VALUES ($projectID, '$nid', '$cCorp', '$wardNo', '$area', '$name', '$phone', '$birthdate', '$occupation', '$spouseNID', $user[id])"
           ;
 
+//          println($sqlInsertBeneficiary);
+
           if ($spouseNID != "" && $parentNID != "") {
-            $failedEntries[] = $beneficiary;
+//            $failedEntries[] = $beneficiary;
+            $failCount++;
             continue;
           } else if ($spouseNID == "") {
             $sqlInsertBeneficiary =
@@ -139,7 +142,8 @@
           try {
             if (!mysqli_query($conn, $sqlInsertBeneficiary)) {
               $successCount -= 1;
-              $failedEntries[] = $beneficiary;
+//              $failedEntries[] = $beneficiary;
+              $failCount++;
             }
           } catch (Exception $ex) {
             echo $sqlGetBeneficiary, PHP_EOL;
@@ -147,20 +151,33 @@
           }
         }
       }
-      echo json_encode(array(
-        "code" => 1,
-        "data" => array(
-          "successCount" => $successCount,
-          "duplicateEntries" => $duplicateEntries,
-          "failedEntries" => $failedEntries
-        )
-      ));
+
+      while (100 > $percentCounter) {
+        $percentCounter++;
+        echo ".";
+
+        ob_flush();
+        flush();
+
+        usleep(100);
+      }
+
+      echo createJSON(1, [
+        "successCount" => $successCount,
+        "duplicateCount" => $duplicateCount,
+        "failCount" => $failCount
+      ]);
     } else {
-      echo json_encode(array(
-        "code" => 4,
-        "data" => "You do not have access to this project."
-      ));
+      echo createJSON(4, "You do not have access to this project.");
     }
+  }
+
+  function insertBeneficiariesFromTSV($conn, $user, $projectID, $offset, $limit, $inputFile): void {
+    insertBeneficiariesFromTextFiles($conn, $user, $projectID, $offset, $limit, $inputFile, "\t");
+  }
+
+  function insertBeneficiariesFromCSV($conn, $user, $projectID, $offset, $limit, $inputFile): void {
+    insertBeneficiariesFromTextFiles($conn, $user,$projectID, $offset, $limit, $inputFile, ",", 1, 2);
   }
 
   function deleteBeneficiary($conn, $user, $projectID, $beneficiaryNID): void {
@@ -170,10 +187,7 @@
       // Moderator Verified
       echo createJSON(1, "Moderator Verified for " . $beneficiaryNID);
     } else {
-      echo json_encode(array(
-        "code" => 4,
-        "data" => "You do not have access to this project."
-      ));
+      echo createJSON(4, "You do not have access to this project.");
     }
   }
 
@@ -182,11 +196,89 @@
     $sqlVerifyModerator = "SELECT * FROM project_moderators WHERE Moderator_ID=$user[id] AND Project_ID=$projectID";
     if (mysqli_num_rows(mysqli_query($conn, $sqlVerifyModerator))) {
       // Moderator Verified
-      $sqlGetBeneficiaries = "SELECT City_corporation, Ward_no, Area, Name, NID, Phone, Birthdate, Occupation, Spouse_NID, Parent_NID FROM beneficiary WHERE Project_ID = $projectID ORDER BY Created_on LIMIT 100";
-      if ($searchKey) $sqlGetBeneficiaries = "SELECT * FROM beneficiary WHERE Project_ID = $projectID AND $searchKey IN (Spouse_NID, NID, Name, Created_on, Area, Birthdate, City_corporation, Clerk_ID, Occupation, Parent_NID, Phone, Ward_no) LIMIT 100";
+      $searchDict = [];
+      $limit = 100;
+      $offset = 0;
+
+      $sqlGetBeneficiaries =
+        "SELECT ". implode(", ", $beneficiaryKeys) . " " .
+        "FROM beneficiary " .
+        "WHERE Project_ID = $projectID ORDER BY Created_on LIMIT $offset, $limit";// {$searchDict['LIMIT'][0]}
+
+      if ($searchKey) {
+        $searchSegments = explode("\t", $searchKey);
+        $querySegments = ["Project_ID = $projectID"];
+        $keyMapper = [
+          "city-corporation" => "City_Corporation",
+          "ward" => "Ward_no",
+          "area" => "Area",
+          "beneficiary-name" => "Name",
+          "beneficiary-nid" => "NID",
+          "phone" => "Phone",
+          "birthdate" => "Birthdate",
+          "birthdate-before" => "Birthdate BEFORE",
+          "birthdate-after" => "Birthdate After",
+          "occupation" => "Occupation",
+          "spouse-nid" => "Spouse_NID",
+          "parent-nid" => "Parent_NID",
+          "nid-matches" => "NID in",
+          "clerk" => "Clerk_ID",
+        ];
+
+        foreach ($searchSegments as $searchSegment) {
+          if (!$searchSegment) continue;
+          if (preg_match("/^[^:]+:[^:]+$/", $searchSegment)) {
+            list($key, $value) = explode(":", $searchSegment);
+            $key = trim($key);
+            $tmp = [];
+
+            if (key_exists($key, $keyMapper)) {
+              foreach (explode(",", $value) as $item) {
+                if (trim($item)) {
+                  $tmp[] = "$keyMapper[$key] LIKE '%" . encode(trim($item))[0] . "%'";
+                }
+              }
+              $searchDict[$keyMapper[$key]] = $tmp;
+            } else if (preg_match("/^(\d+)$/", trim($value))) {
+              if (strtolower($key) == "limit") $limit = trim($value);
+              if (strtolower($key) == "offset") $offset =  intval(trim($value)) - 1;
+            } else if ($key == "all") {
+              foreach (explode(",", $value) as $item) {
+                if (trim($item)) {
+                  $tmp[] = encode(trim($item))[0];
+                }
+              }
+              $searchDict[$key] = $tmp;
+            }
+          }
+        }
+
+        foreach ($searchDict as $key => $values) {
+          if ($key == "all") {
+            $tempSegments = [];
+            foreach ($values as $value) {
+              $tempSegments[] = "'$value' IN (" . implode(", ", $beneficiaryKeys) . ")";
+            }
+            $querySegments[] = "(" . implode(' OR ', $tempSegments) . ")";
+          } else {
+            $querySegment = " (" . implode(" OR ", $values) . ") ";
+            $querySegments[] = $querySegment;
+          }
+        }
+
+        $queryFilters = implode(" AND ", $querySegments);
+
+        $sqlGetBeneficiaries =
+          "SELECT ". implode(", ", $beneficiaryKeys) . " ".
+          "FROM beneficiary " .
+          "WHERE " . $queryFilters . " ORDER BY Created_on" .
+          " LIMIT $offset, $limit";
+
+      }
 
       $resultBeneficiaries = mysqli_query($conn, $sqlGetBeneficiaries);
       $beneficiaries = [];
+      $rowCount = $offset + 1;
 
       while ($row_beneficiary = mysqli_fetch_assoc($resultBeneficiaries)) {
         $beneficiary = $row_beneficiary;
@@ -194,19 +286,13 @@
         // Decoding chars using URL Encoding
         foreach($beneficiaryKeys as $key) $beneficiary[$key] = urldecode($beneficiary[$key]);
 
-        $beneficiaries[] = $beneficiary;
+        $beneficiaries[] = array_merge(["RowCount" => engToBanglaNumeric($rowCount++)], $beneficiary);
       }
 
-      echo json_encode(array(
-        "code" => 1,
-        "data" => $beneficiaries
-      ));
+      echo createJSON(1, $beneficiaries);
 
     } else {
-      echo json_encode(array(
-        "code" => 4,
-        "data" => "You do not have access to this project."
-      ));
+      echo createJSON(4, "You do not have access to this project.");
     }
   }
 
@@ -217,10 +303,65 @@
       // Moderator Verified
       echo createJSON(1, "Moderator Verified for " . $beneficiaryNID);
     } else {
-      echo json_encode(array(
-        "code" => 4,
-        "data" => "You do not have access to this project."
-      ));
+      echo createJSON(4, "You do not have access to this project.");
+    }
+  }
+
+  function loadSuggestions($conn, $user, $projectID, $key, $searchKey): void {
+    $sqlVerifyModerator = "SELECT * FROM project_moderators WHERE Moderator_ID=$user[id] AND Project_ID=$projectID";
+    if (mysqli_num_rows(mysqli_query($conn, $sqlVerifyModerator))) {
+      // Moderator Verified
+      $keyMapper = [
+        "city-corporation" => "beneficiary.City_Corporation",
+        "ward" => "beneficiary.Ward_no",
+        "area" => "beneficiary.Area",
+        "beneficiary-name" => "beneficiary.Name",
+        "beneficiary-nid" => "beneficiary.NID",
+        "phone" => "beneficiary.Phone",
+        "birthdate" => "beneficiary.Birthdate",
+        "birthdate-before" => "Birthdate BEFORE",
+        "birthdate-after" => "Birthdate After",
+        "occupation" => "beneficiary.Occupation",
+        "spouse-nid" => "beneficiary.Spouse_NID",
+        "parent-nid" => "beneficiary.Parent_NID",
+        "nid-matches" => "NID in",
+        "clerk" => "Clerk_ID",
+      ];
+      $columnFor = [
+        "city-corporation" => "beneficiary.City_Corporation",
+        "ward" => "beneficiary.Ward_no",
+        "area" => "beneficiary.Area",
+        "beneficiary-name" => "beneficiary.Name",
+        "beneficiary-nid" => "beneficiary.NID",
+        "phone" => "beneficiary.Phone",
+        "birthdate" => "beneficiary.Birthdate",
+        "birthdate-before" => "Birthdate BEFORE",
+        "birthdate-after" => "Birthdate After",
+        "occupation" => "beneficiary.Occupation",
+        "spouse-nid" => "beneficiary.Spouse_NID",
+        "parent-nid" => "beneficiary.Parent_NID",
+        "nid-matches" => "NID in",
+        "clerk" => "user.Name",
+      ];
+
+      $sqlGetSuggestion = "SELECT DISTINCT($columnFor[$key]) AS '$columnFor[$key]' FROM beneficiary LEFT JOIN user on beneficiary.Clerk_ID = user.ID WHERE Project_ID = $projectID LIMIT 1000";
+      if ($searchKey) {
+        $sqlGetSuggestion = "SELECT DISTINCT($columnFor[$key]) AS '$columnFor[$key]' FROM beneficiary LEFT JOIN user on beneficiary.Clerk_ID = user.ID WHERE Project_ID = $projectID AND $keyMapper[$key] LIKE '%$searchKey%' ORDER BY $keyMapper[$key] LIMIT 1000";
+      }
+
+      $resultSuggestion = mysqli_query($conn, $sqlGetSuggestion);
+      $suggestions = [];
+
+      while ($rowSuggestion = mysqli_fetch_assoc($resultSuggestion)) {
+        $suggestion = trim(decode($rowSuggestion[$columnFor[$key]])[0]);
+        if (!in_array($suggestion, $suggestions)) {
+          $suggestions[] = $suggestion;
+        }
+      }
+
+      echo createJSON(1, $suggestions);
+    } else {
+      echo createJSON(4, "You do not have access to this project.");
     }
   }
 
@@ -232,17 +373,22 @@
       if (isset($_REQUEST["method"])) {
         $method = $_REQUEST["method"];
         if (isset($_REQUEST["args"])) {
-          $args = array_merge(array($conn, $user), explode(";", $_REQUEST["args"]));
+          $args = array_merge([$conn, $user], $_REQUEST["args"]);
         }
 
         switch ($method) {
           case "insertBeneficiary":
             insertBeneficiary(...$args);
             break;
-          case "insertBeneficiariesFromTXT":
+          case "insertBeneficiariesFromTSV":
             $txtFile = $_FILES["inputFile"];
-            $args = array_merge($args, array($txtFile));
-            insertBeneficiariesFromTXT(...$args);
+            $args = array_merge($args, [$txtFile]);
+            insertBeneficiariesFromTSV(...$args);
+            break;
+          case "insertBeneficiariesFromCSV":
+            $txtFile = $_FILES["inputFile"];
+            $args = array_merge($args, [$txtFile]);
+            insertBeneficiariesFromCSV(...$args);
             break;
           case "deleteBeneficiary":
             deleteBeneficiary(...$args);
@@ -253,16 +399,16 @@
           case "updateBeneficiary":
             updateBeneficiary(...$args);
             break;
+          case "loadSuggestions":
+            loadSuggestions(...$args);
+            break;
           default:
             break;
         }
       }
     } else {
-      echo json_encode($authUser);
+      echo createJSON($authUser["code"], $authUser["data"]);
     }
   } else {
-    echo json_encode(array(
-      "code" => 0,
-      "data" => "Database connection parameters missing."
-    ));
+    echo createJSON(0, "Database connection parameters missing.");
   }

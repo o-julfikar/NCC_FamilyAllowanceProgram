@@ -1,9 +1,12 @@
 <?php
 
+
+
   $beneficiaryKeys = ["City_corporation", "Ward_no", "Area", "Name", "NID", "Phone", "Birthdate", "Occupation", "Spouse_NID", "Parent_NID"];//
+  $utf8BOM = "\xEF\xBB\xBF";
 
   function encode(...$args): array {
-    for ($i = 0; $i < sizeof($args); $i++) $args[$i] = urlencode($args[$i]);
+    for ($i = 0; $i < sizeof($args); $i++) $args[$i] = urlencode(trim($args[$i]));
 
     return $args;
   }
@@ -45,8 +48,16 @@
     return false;
   }
 
-  function createJSON($returnCode, $returnData): string {
-    return json_encode(array("code" => $returnCode, "data" => $returnData));
+  function createJSON($returnCode, $returnData, $returnTitle="Error"): string {
+    return json_encode(array("code" => $returnCode, "data" => $returnData, "title" => $returnTitle));
+  }
+
+  function sendResponse($returnCode, $returnData, $returnTitle="Error"): void {
+    echo createJSON($returnCode, $returnData, $returnTitle);
+  }
+
+  function openURL($url, $target="_self"): void {
+    echo "<script>open('$url', '$target')</script>";
   }
 
   function getBeneficiaryTableHeader(): string {
@@ -95,4 +106,19 @@
     foreach ($keys as $key) if (array_key_exists($key, $map)) $values[] = $map[$key]; else $values[] = "NA";
 
     return $values;
+  }
+
+  function getBeneficiaryKeys(): array {
+    global $beneficiaryKeys;
+    return $beneficiaryKeys;
+  }
+
+  function println(...$args): void {
+    $output = "";
+    $_sep = "";
+    foreach ($args as $arg) {
+      $output .= $_sep . strval($arg);
+      $_sep = " ";
+    }
+    file_put_contents("php://stdout", $output . "\n");
   }

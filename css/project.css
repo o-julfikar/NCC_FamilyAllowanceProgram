@@ -1,12 +1,12 @@
 @import "index.css";
 
 .main {
-  display: none;
+
 }
 
 .left {
   width: 70%;
-  background-image: url("../img_2.png");
+  background-image: url("../right-panel-bokeh-background.png");
   background-size: 100% 100%;
   min-width: 0;
 }
@@ -131,14 +131,11 @@ input[type=number][noSpinner]::-webkit-inner-spin-button {
 
 .search-container {
   width: 100%;
+  border-bottom: 1px solid black;
 }
 
 .search-container .search-text-container {
   width: calc(100% - 10px);
-}
-
-.search-container .search-suggestion-container {
-  /*box-shadow: 0 5px 10px black;*/
 }
 
 /*#txtSearch {*/
@@ -204,7 +201,8 @@ td {
 }
 
 .beneficiaries-table thead tr:first-child {
-  height: 94px;
+  /*height: 94px;*/
+  font-size: 14px;
 }
 
 .beneficiaries-table thead tr:nth-child(2) {
@@ -219,9 +217,12 @@ td {
 .beneficiaries-table thead {
   top: 0;
   position: sticky;
-  border-top: 1px solid;
 }
 
 .table-container.beneficiary-table-container {
   background-color: rgba(255, 255, 255, 0.5);
+}
+
+#tableModerators tr p {
+  margin: 5px 0;
 }

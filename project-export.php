@@ -13,6 +13,8 @@
 
   date_default_timezone_set("Asia/Dhaka");
 
+  const LIMIT_ADDER = 0;
+
   // Help: https://mpdf.github.io/fonts-languages/fonts-in-mpdf-7-x.html
   /**
    * @throws MpdfException
@@ -100,7 +102,7 @@
     return $mpdf;
   }
 
-  function downloadPDF($projectID): void {
+  function downloadPDF($projectID, $offset, $limit): void {
     global $conn, $user, $beneficiaryKeys;
     $sqlGetProject = "SELECT * FROM project WHERE ID=$projectID";
 
@@ -110,19 +112,23 @@
 
       if (mysqli_num_rows(mysqli_query($conn, $sqlVerifyModerator))) {
         // Moderator Verified
+        $offset = preg_match("/\d+/", $offset)? intval($offset) - 1 : 0;
+        $limit = preg_match("/\d+/", $limit)? intval($limit) : 1000;
+        $limit += LIMIT_ADDER;
+        $cnt = $offset + 1;
+
         try {
           $pdf = getBanglaMPDF($user);
+          $pdf -> SetTitle($filename);
 
-          $sqlGetBeneficiaries = "SELECT * FROM beneficiary WHERE Project_ID=$projectID";
+          $sqlGetBeneficiaries = "SELECT * FROM beneficiary WHERE Project_ID=$projectID ORDER BY Created_on LIMIT $offset, $limit";
           $resultBeneficiaries = mysqli_query($conn, $sqlGetBeneficiaries);
-
 
           $htmlDoc =
             "<!DOCTYPE html>" .
             "<html lang=\"en\">" .
             "<head>" .
-            "<title>Report PDF</title>" .
-            `<link rel="stylesheet" href="css/project.css">` .
+            "<link rel=\"stylesheet\" href=\"css/project.css\">" .
             "<style>" .
             "body {" .
             "display: flex;" .
@@ -148,7 +154,6 @@
             getBeneficiaryTableHeader() .
             "<tbody>";
 
-          $cnt = 1;
           $widths = [4, 10, 6, 10, 10, 10, 10, 10, 10, 10, 10];
 
           while ($rowBeneficiary = mysqli_fetch_assoc($resultBeneficiaries)) {
@@ -165,8 +170,6 @@
             $beneficiaryTable .= "</tr>";
 
             $cnt++;
-
-            if ($cnt > 1000) break;
           }
 
           $beneficiaryTable .= "</tbody></table>";
@@ -194,8 +197,8 @@
     }
   }
 
-  function downloadTXT($projectID): void {
-    global $conn, $user, $beneficiaryKeys;
+  function downloadTextFile($projectID, $delimiter="\t", $offset="0", $limit="1000", $headerRowsCount=0, $headerColumnsCount=0, $fileType="tsv"): void {
+    global $conn, $user, $beneficiaryKeys, $utf8BOM;
     $sqlGetProject = "SELECT * FROM project WHERE ID=$projectID";
 
     if ($rowProject = mysqli_fetch_assoc(mysqli_query($conn, $sqlGetProject))) {
@@ -204,34 +207,38 @@
 
       if (mysqli_num_rows(mysqli_query($conn, $sqlVerifyModerator))) {
         // Moderator Verified
+        $offset = preg_match("/\d+/", $offset)? intval($offset) - 1 : 0;
+        $limit = preg_match("/\d+/", $limit)? intval($limit) : 1000;
+        $limit += LIMIT_ADDER;
+        $cnt = $offset + 1;
+
         try {
-          $sqlGetBeneficiaries = "SELECT * FROM beneficiary WHERE Project_ID=$projectID";
+          $sqlGetBeneficiaries = "SELECT * FROM beneficiary WHERE Project_ID=$projectID ORDER BY Created_on LIMIT $offset, $limit";
           $resultBeneficiaries = mysqli_query($conn, $sqlGetBeneficiaries);
-          $filePath = "generated-files/txt/";
+          $filePath = "generated-files/$fileType/";
           $fileContent = "";
-          $cnt = 0;
+          if ($headerRowsCount > 0) $fileContent .= implode($delimiter, ["ক্রঃ নংঃ", "সিটি কর্পোরেশন", "ওয়ার্ড নম্বর", "বাড়ী বা মহল্লা", "উপকারভোগীর নাম", "এনআইডি নম্বর", "মোবাইল নম্বর", "জন্ম তারিখ (যদি থাকে)", "পেশা", "স্বামী বা স্ত্রীর এনআইডি", "অবিবাহিত হলে পিতার এনআইডি"]);
+          if ($headerRowsCount > 1) $fileContent .= "\n" . implode($delimiter, array_map(fn($sn): string => engToBanglaNumeric($sn), range(1, 11)));
 
           while ($rowBeneficiary = mysqli_fetch_assoc($resultBeneficiaries)) {
             $beneficiary = decode(...getMapValues($rowBeneficiary, $beneficiaryKeys));
+            if ($headerColumnsCount > 0) $beneficiary = array_merge([engToBanglaNumeric($cnt)], $beneficiary);
 
-            $sep = "";
-            foreach ($beneficiary as $beneficiaryAttribute) {
-              $fileContent .= $sep . $beneficiaryAttribute;
-              $sep = "\t";
-            }
+            $fileContent .= "\n" . implode($delimiter, $beneficiary);
 
-            $fileContent .= "\n";
-            if (++$cnt > 1000) break;
+            $cnt++;
           }
 
+          $fileContent = trim($fileContent);
+
           clearDir($filePath, 10);
-          if (file_put_contents($filePath . $filename . ".txt", $fileContent)) {
+          if (file_put_contents($filePath . $filename . "." . $fileType, $utf8BOM . $fileContent)) {
             echo createJSON(1, [
               "filename" => $filename,
-              "url" => $filePath . $filename . ".txt",
+              "url" => $filePath . $filename . "." . $fileType,
             ]);
           } else {
-            echo createJSON(2, "TXT file generation failed.");
+            echo createJSON(2, strtoupper($fileType) . " file generation failed.");
           }
         } catch (Exception $ex) {
           echo createJSON(2, $ex->getMessage());
@@ -244,54 +251,12 @@
     }
   }
 
-  function downloadCSV($projectID): void {
-    global $conn, $user, $beneficiaryKeys;
-    $sqlGetProject = "SELECT * FROM project WHERE ID=$projectID";
+  function downloadTSV($projectID, $offset="0", $limit="1000"): void {
+    downloadTextFile($projectID, "\t", $offset, $limit, 0, 0, "tsv");
+  }
 
-    if ($rowProject = mysqli_fetch_assoc(mysqli_query($conn, $sqlGetProject))) {
-      $sqlVerifyModerator = "SELECT * FROM project_moderators WHERE Moderator_ID=$user[id] AND Project_ID=$projectID";
-      $filename = $rowProject["Name"] . " - Downloaded by $user[name] on " . date("F d, Y");
-
-      if (mysqli_num_rows(mysqli_query($conn, $sqlVerifyModerator))) {
-        // Moderator Verified
-        try {
-          $sqlGetBeneficiaries = "SELECT * FROM beneficiary WHERE Project_ID=$projectID";
-          $resultBeneficiaries = mysqli_query($conn, $sqlGetBeneficiaries);
-          $filePath = "generated-files/csv/";
-          $fileContent = ", ".implode(["ক্রঃ নংঃ", "সিটি কর্পোরেশন", "ওয়ার্ড নম্বর", "বাড়ী বা মহল্লা", "উপকারভোগীর নাম", "এনআইডি নম্বর", "মোবাইল নম্বর", "জন্ম তারিখ (যদি থাকে)", "পেশা", "স্বামী বা স্ত্রীর এনআইডি", "অবিবাহিত হলে পিতার এনআইডি"]);
-          $cnt = 0;
-
-          while ($rowBeneficiary = mysqli_fetch_assoc($resultBeneficiaries)) {
-            $beneficiary = decode(...getMapValues($rowBeneficiary, $beneficiaryKeys));
-            $fileContent .= "\n" . engToBanglaNumeric($cnt);
-
-            foreach ($beneficiary as $beneficiaryAttribute) {
-              $fileContent .= ", " . $beneficiaryAttribute;
-            }
-
-            $cnt++;
-
-            if ($cnt > 1000) break;
-          }
-
-          clearDir($filePath, 10);
-          if (file_put_contents($filePath . $filename . ".csv", $fileContent)) {
-            echo createJSON(1, [
-              "filename" => $filename,
-              "url" => $filePath . $filename . ".csv",
-            ]);
-          } else {
-            echo createJSON(2, "CSV file generation failed.");
-          }
-        } catch (Exception $ex) {
-          echo createJSON(2, $ex->getMessage());
-        }
-      } else {
-        echo createJSON(2, "You do not have access to this project.");
-      }
-    } else {
-      echo createJSON(2, "Project does not exist");
-    }
+  function downloadCSV($projectID, $offset="0", $limit="1000"): void {
+    downloadTextFile($projectID, ", ", $offset, $limit, 2, 1, "csv");
   }
 
   if (isset($conn)) {
@@ -299,16 +264,17 @@
     if ($authUser["code"] == 1) {
       $user = $authUser["data"];
       if (isset($_POST["submit"])) {
-        $method = $args = "";
+        $method = "";
+        $args = [];
         if (isset($_POST["method"])) $method = $_POST["method"];
-        if (isset($_POST["method"])) $args = explode(";", $_POST["args"]);
+        if (isset($_POST["args"])) $args = $_POST["args"];
 
         switch ($method) {
           case "downloadPDF":
             downloadPDF(...$args);
             break;
-          case "downloadTXT":
-            downloadTXT(...$args);
+          case "downloadTSV":
+            downloadTSV(...$args);
             break;
           case "downloadCSV":
             downloadCSV(...$args);

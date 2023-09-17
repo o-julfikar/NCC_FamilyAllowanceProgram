@@ -1,6 +1,0 @@
-Narayanganj City Corporation	১২	পাইকপাড়া	রফিক	১৪৬৫৪৩২৯২৩১	০১৪৬২৩০৩২৫৪	1987-03-14	Student	১৮৯৫৪৪৩৬৪২৫	
-Narayanganj City Corporation	11	Meena	Abc	10	01303246132	2023-09-05	C	1230	69
-Narayanganj City Corporation	১২	    Meena	Abc	123	01303246132	2023-09-05	C  	456	789
-Narayanganj City Corporation	11	Tan	Hussain	690	01303246132	2023-09-05	Student	41230	850
-Narayanganj City Corporation	১২	পাইকপাড়া	রফিক	১২৩১৪৬৫৪৩২৯	০১৩০৩২৪৬২৫৪	1987-03-14	Student	১২৫৪৩৬৪৮৯৫৪	
-Narayanganj City Corporation	১২	পাইকপাড়া	রফিক	১২৫৪৮৯৫৪৪৩৬	০১৩০৩২৪৬২৫৪	1987-03-14	Student	১২৫৪৩২৯৩১৪৬	

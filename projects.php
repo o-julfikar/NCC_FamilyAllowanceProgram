@@ -3,44 +3,10 @@
   include "connect.php";
   include "auth_engine.php";
 
-  $methodName = $methodParameters = "";
+  $methodName = "";
+  $args = [];
 
-  if (isset($_REQUEST["method"])) {
-    $methodName = $_REQUEST["method"];
-    if (isset($_REQUEST["args"])) {
-      $methodParameters = $_REQUEST["args"];
-    }
-
-    switch ($methodName) {
-      case "getAllProjects":
-        getAllProjects();
-        break;
-      case "insertProject":
-        $projectName = explode(";", $methodParameters)[0];
-        insertProject($projectName);
-        break;
-      case "loadModerators":
-        $projectID = explode(";", $methodParameters)[0];
-        loadModerators($projectID);
-        break;
-      case "addModerator":
-        list($projectID, $moderatorEmail) = explode(";", $methodParameters);
-        addModerator($projectID, $moderatorEmail);
-        break;
-      case "deleteModerator":
-        list($projectID, $moderatorID) = explode(";", $methodParameters);
-        deleteModerator($projectID, $moderatorID);
-        break;
-      case "deleteProject":
-        list($projectID) = explode(";", $methodParameters);
-        deleteProject($projectID);
-        break;
-      default:
-        break;
-    }
-  }
-
-  function getAllProjects() {
+  function getAllProjects(): void {
     global $conn;
     if (isset($conn)) {
 
@@ -81,7 +47,7 @@
     }
   }
 
-  function insertProject($projectName) {
+  function insertProject($projectName): void {
     global $conn;
     if (isset($conn)) {
 
@@ -142,7 +108,7 @@
     }
   }
 
-  function loadModerators($projectID) {
+  function loadModerators($projectID): void {
     global $conn;
     if (isset($conn)) {
 
@@ -153,21 +119,25 @@
         $is_moderator = false;
 
         $sqlGetModerators =
-          "SELECT ID AS id, Name AS name FROM project_moderators " .
+          "SELECT project.Name as title, moderator.ID AS id, moderator.Name AS name FROM project_moderators " .
           "INNER JOIN user moderator ON moderator.ID = project_moderators.Moderator_ID " .
+          "INNER JOIN project ON project.ID = project_moderators.Project_ID " .
           "WHERE project_id=$projectID";
         $resultModerators = mysqli_query($conn, $sqlGetModerators);
+        $projectTitle = "";
         $moderators = [];
 
         while ($row_moderator = mysqli_fetch_assoc($resultModerators)) {
           $moderators[] = $row_moderator;
+          $projectTitle = $row_moderator["title"];
           $is_moderator |= $user["id"] == $row_moderator["id"];
         }
 
         if ($is_moderator) {
           echo json_encode(array(
             "code" => 1,
-            "data" => $moderators
+            "data" => $moderators,
+            "title" => $projectTitle,
           ));
         } else {
           echo json_encode(array(
@@ -190,7 +160,7 @@
     }
   }
 
-  function addModerator($projectID, $moderatorEmail) {
+  function addModerator($projectID, $moderatorEmail): void {
     global $conn;
     if (isset($conn)) {
 
@@ -251,7 +221,7 @@
     }
   }
 
-  function deleteModerator($projectID, $moderatorID) {
+  function deleteModerator($projectID, $moderatorID): void {
     global $conn;
     if (isset($conn)) {
 
@@ -379,7 +349,7 @@
     }
   }
 
-  function deleteProject($projectID) {
+  function deleteProject($projectID): void {
     global $conn;
     if (isset($conn)) {
 
@@ -432,5 +402,35 @@
         "code" => 502,
         "data" => "An unknown error occurred. Please try again later!"
       ));
+    }
+  }
+
+  if (isset($_REQUEST["method"])) {
+    $methodName = $_REQUEST["method"];
+    if (isset($_REQUEST["args"])) {
+      $args = $_REQUEST["args"];
+    }
+
+    switch ($methodName) {
+      case "getAllProjects":
+        getAllProjects();
+        break;
+      case "insertProject":
+        insertProject(...$args);
+        break;
+      case "loadModerators":
+        loadModerators(...$args);
+        break;
+      case "addModerator":
+        addModerator(...$args);
+        break;
+      case "deleteModerator":
+        deleteModerator(...$args);
+        break;
+      case "deleteProject":
+        deleteProject(...$args);
+        break;
+      default:
+        break;
     }
   }

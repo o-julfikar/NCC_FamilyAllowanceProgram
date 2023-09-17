@@ -16,7 +16,7 @@ img {
 .project-section {
   display: flex;
   flex-direction: column;
-  height: 70%;);
+  height: 70%;
   margin-bottom: auto;
   width: 100%;
 }
@@ -120,7 +120,11 @@ img {
 
 .project-section,
 .account-section {
-  visibility: hidden;
+  /*visibility: hidden;*/
+}
+
+.account-section :not(:first-child) {
+  margin-top: 5px;
 }
 
 .table-container {

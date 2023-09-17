@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="css/modal-popup-style.css">
+    <style>
+      body, html {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+
+<!--    <div class="modal-popup-body">-->
+<!--      <div class="modal-popup-window">-->
+<!--        <h2 class="modal-popup-title">Title</h2>-->
+<!--        <div class="modal-popup-content-container">This is a test</div>-->
+<!--        <div class="modal-popup-input-container">-->
+<!--          <input type="text" name="txtFirst" id="txtFirst" placeholder="First Field">-->
+<!--          <input type="text" name="txtSecond" id="txtSecond" placeholder="Second Field">-->
+<!--        </div>-->
+<!--        <div class="modal-popup-button-container">-->
+<!--          <button type="submit">Cancel</button>-->
+<!--          <button approve type="submit">Accept</button>-->
+<!--          <button refuse type="submit">Decline</button>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
+
+    <script type="module">
+      import * as MsgBox from "./js/ModalPopup.js";
+      import {encodeSafeJSON} from "./js/json-engine.js";
+
+      // let x = MsgBox.show("Login", MsgBox.ModalContent.NONE, MsgBox.ModalField.PASSWORD_FIELD, MsgBox.ModalButton.OK_CANCEL("LOGIN", "CANCEL"));
+      // // x.okButton.onclick = (e) => {
+      // //   alert("Hi");
+      // // }
+
+      const msgBox = MsgBox.show("Login", MsgBox.ModalContent.NONE, MsgBox.ModalField.PASSWORD_FIELD, MsgBox.ModalButton.OK_CANCEL("LOGIN", "CANCEL"));
+      msgBox.okButton.onclick = (e) => {
+        let testRequest = new XMLHttpRequest();
+        testRequest.onload = (e) => {
+          const response = encodeSafeJSON(e.target.responseText);
+
+          switch (response.code) {
+            case 1:
+              MsgBox.show("Valid", response.data, MsgBox.ModalField.NONE, MsgBox.ModalButton.OK("OK"), MsgBox.ModalPopup.SUCCESS_BODY).
+                then(() => {
+                msgBox.close();
+              });
+              break;
+            case 2:
+              MsgBox.show("Invalid", response.data, MsgBox.ModalField.NONE, MsgBox.ModalButton.OK("OK"), MsgBox.ModalPopup.ERROR_BODY);
+              break;
+            default:
+              MsgBox.show("Error", "An unknown error occurred", MsgBox.ModalField.NONE, MsgBox.ModalButton.CANCEL("OK"));
+          }
+        }
+
+        let formData = new FormData();
+        formData.set("data", msgBox.fields[0].value);
+        testRequest.open("POST", "test.php");
+        testRequest.send(formData);
+      };
+    </script>
+  </body>
+</html>

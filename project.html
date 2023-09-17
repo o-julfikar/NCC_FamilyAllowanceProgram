@@ -6,13 +6,14 @@
 
     <link rel="stylesheet" href="css/project.css">
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="css/pro-search.css">
+    <link rel="stylesheet" href="css/segmented-search-style.css">
+    <link rel="stylesheet" href="css/modal-popup-style.css">
   </head>
   <body>
     <div class="main">
       <div class="left">
         <div class="left-bg">
-          <div class="search-container" id="txtSearch"></div>
+          <div class="search-container" id="smartSearch"></div>
           <div class="table-container beneficiary-table-container">
             <table id="tableBeneficiaries" class="beneficiaries-table">
               <thead>
@@ -50,7 +51,7 @@
           </div>
           <div class="input-container">
             <div class="input-row-1">
-              <select name="cboCityCorporation" id="cboCityCorporation" required>
+              <select title="সিটি কর্পোরেশন" name="cboCityCorporation" id="cboCityCorporation" required>
                 <option value="Barishal City Corporation">Barishal City Corporation</option>
                 <option value="Chittagong City Corporation">Chittagong City Corporation</option>
                 <option value="Comilla City Corporation">Comilla City Corporation</option>
@@ -64,33 +65,33 @@
                 <option value="Rangpur City Corporation">Rangpur City Corporation</option>
                 <option value="Sylhet City Corporation">Sylhet City Corporation</option>
               </select>
-              <input type="text" name="numWard" id="numWard" placeholder="ওয়ার্ড নম্বর" required>
-              <input type="text" name="txtArea" id="txtArea" placeholder="বাড়ী বা মহল্লা" required>
+              <input title="ওয়ার্ড নম্বর" type="text" name="numWard" id="numWard" placeholder="ওয়ার্ড নম্বর" required>
+              <input title="বাড়ী বা মহল্লা" type="text" name="txtArea" id="txtArea" placeholder="বাড়ী বা মহল্লা" required>
             </div>
             <div class="input-row-2">
-              <input type="text" name="txtName" id="txtName" placeholder="উপকারভোগীর নাম" required>
-              <input type="text" name="numNID" id="numNID" placeholder="এনআইডি নম্বর" required>
-              <input noSpinner type="tel" name="telPhone" id="telPhone" placeholder="মোবাইল নম্বর" required>
-              <input type="date" name="dateBirthdate" id="dateBirthdate" placeholder="জন্ম তারিখ">
-              <input type="text" name="txtOccupation" id="txtOccupation" placeholder="পেশা" required>
+              <input title="উপকারভোগীর নাম" type="text" name="txtName" id="txtName" placeholder="উপকারভোগীর নাম" required>
+              <input title="এনআইডি নম্বর" type="text" name="numNID" id="numNID" placeholder="এনআইডি নম্বর" required>
+              <input title="মোবাইল নম্বর" noSpinner type="tel" name="telPhone" id="telPhone" placeholder="মোবাইল নম্বর" required>
+              <input title="জন্ম তারিখ" type="date" name="dateBirthdate" id="dateBirthdate" placeholder="জন্ম তারিখ">
+              <input title="পেশা" type="text" name="txtOccupation" id="txtOccupation" placeholder="পেশা" required>
             </div>
             <div class="input-row-3">
-              <input type="text" name="numSpouseNID" id="numSpouseNID" placeholder="স্বামী বা স্ত্রীর এনআইডি">
-              <input type="text" name="numParentNID" id="numParentNID" placeholder="পিতার এনআইডি">
-              <button approve type="submit" id="btnInsert">Insert</button>
+              <input title="স্বামী বা স্ত্রীর এনআইডি" type="text" name="numSpouseNID" id="numSpouseNID" placeholder="স্বামী বা স্ত্রীর এনআইডি">
+              <input title="পিতার এনআইডি" type="text" name="numParentNID" id="numParentNID" placeholder="পিতার এনআইডি">
+              <button title="জমা দিতে এখানে ক্লিক করুন" approve type="submit" id="btnInsert">Insert</button>
             </div>
           </div>
           <div class="export-container">
-            <button type="submit" id="btnDownloadTXT">Download (as TXT)</button>
-            <button type="submit" id="btnDownloadCSV">Download (as CSV)</button>
-            <button type="submit" id="btnDownloadPDF">Download (as PDF)</button>
-            <button type="submit" id="btnPrint">Print</button>
+            <button title="টি.এস.ভি (Tab Separated Values) ফাইল হিসাবে প্রথম ১০০০ সারি ডাউনলোড করতে এখানে ক্লিক করুন" type="submit" id="btnDownloadTSV">Download (as TSV)</button>
+            <button title="সি.এস.ভি (Comma Separated Value) ফাইল হিসাবে প্রথম ১০০০ সারি ডাউনলোড করতে এখানে ক্লিক করুন" type="submit" id="btnDownloadCSV">Download (as CSV)</button>
+            <button title="পি.ডি.এফ (Portable Document Format) ফাইল হিসাবে প্রথম ১০০০ সারি ডাউনলোড করতে এখানে ক্লিক করুন" type="submit" id="btnDownloadPDF">Download (as PDF)</button>
+            <button title="উপরে দেখানো টেবিলের ডেটা প্রিন্ট করতে এখানে ক্লিক করুন" type="submit" id="btnPrint">Print</button>
           </div>
         </div>
       </div>
       <div class="right">
         <div class="right-top">
-          <button type="submit" id="btnDashboard">Dashboard</button>
+          <button type="submit" id="btnDashboard">Open Dashboard</button>
           <div class="table-container">
             <table id="tableModerators">
               <thead>
@@ -104,15 +105,15 @@
           </div>
           <button type="submit" id="btnAddModerator">Add Moderator</button>
         </div>
-        <button type="submit" id="btnLoadFromTxt">Load (from TXT)</button>
-        <button type="submit" id="btnLoadFromCSV" >Load (from CSV)</button>
-        <button deny type="submit" id="btnDeleteProject">Delete Project</button>
-        <button type="submit" id="btnAdmin">Admin</button>
-        <button deny type="submit" id="btnLogout">Logout</button>
+        <button title="টি.এস.ভি (Tab Separated Values) ফাইল থেকে ডেটা সন্নিবেশ করতে এখানে ক্লিক করুন। অনুগ্রহ করে নিশ্চিত করুন যে প্রতিটি সারির ডেটা একটি পৃথক লাইনে রয়েছে এবং কলামগুলি একটি ট্যাব দ্বারা পৃথক করা হয়েছে৷" type="submit" id="btnLoadFromTSV">Load (from TSV)</button>
+        <button title="সি.এস.ভি (Comma Separated Values) ফাইল থেকে ডেটা সন্নিবেশ করতে এখানে ক্লিক করুন। অনুগ্রহ করে নিশ্চিত করুন যে ডেটা সঠিক বিন্যাসে রয়েছে।" type="submit" id="btnLoadFromCSV" >Load (from CSV)</button>
+        <button title="স্থায়ীভাবে প্রজেক্টি মুছে ফেলতে এখানে ডাবল ক্লিক করুন. অনুগ্রহ করে মনে রাখবেন যে ক্রিয়াটি পূর্বাবস্থায় ফেরানো সম্ভব হবে না এবং শুধুমাত্র প্রজেক্টি মালিকদের এই অনুমতি রয়েছে৷" deny type="submit" id="btnDeleteProject">Delete Project</button>
+        <button title="অ্যাডমিন প্যানেল অ্যাক্সেস করতে এখানে ক্লিক করুন। দয়া করে মনে রাখবেন যে শুধুমাত্র অ্যাডমিন ভূমিকা ব্যবহারকারীদের এই অনুমতি আছে।" type="submit" id="btnAdmin">Admin</button>
+        <button title="আপনার সেশনটি প্রত্যাহার করুন" deny type="submit" id="btnLogout">Logout</button>
       </div>
     </div>
     <script type="module" src="js/project.js"></script>
-    <script type="module" src="js/pro-search.js"></script>
+<!--    <script type="module" src="js/segmented-search.js"></script>-->
   </body>
 </html>
 

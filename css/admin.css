@@ -1,8 +1,7 @@
 @import "index.css";
 
 .main {
-  /*visibility: hidden;*/
-  display: none;
+  visibility: hidden;
 }
 
 .left {

@@ -1,106 +1,99 @@
-import {auth} from "./auth.js";
 import {encodeSafeJSON} from "./json-engine.js";
 import {logout} from "./account.js";
+import * as MP from "./ModalPopup.js";
+import {Auth} from "./Authenticator.js";
 
-let tableProject = document.getElementById("tableProjects");
-let newProjectContainer = document.getElementsByClassName("new-project-container")[0];
-let btnLogout = document.getElementById("btnLogout");
-let btnNewProject = document.getElementById("btnNewProject");
-let btnAdmin = document.getElementById("btnAdmin");
-let btnClose = document.getElementById("btnClose");
-let btnCreate = document.getElementById("btnCreate");
-let projectSection = document.getElementsByClassName("project-section")[0];
-let accountSection = document.getElementsByClassName("account-section")[0];
-let txtProjectName = document.getElementById("txtProjectName");
+const mainContainer = document.getElementsByClassName("main")[0];
+const tableProject = document.getElementById("tableProjects");
+const btnLogout = document.getElementById("btnLogout");
+const btnNewProject = document.getElementById("btnNewProject");
+const btnAdmin = document.getElementById("btnAdmin");
+const projectSection = document.getElementsByClassName("project-section")[0];
+const accountSection = document.getElementsByClassName("account-section")[0];
+const tableBody = tableProject.getElementsByTagName("tbody")[0];
 
-btnAdmin.addEventListener('click', () => {
-  window.location = "admin.html";
-})
+btnAdmin.onclick = () => open("admin.html", "_self");
+btnLogout.onclick = () => logout();
 
 btnNewProject.onclick = function () {
-  newProjectContainer.classList.add("open-popup");
-}
+  const newProjectWindows = MP.show("Add Project", MP.ModalContent.NONE, MP.ModalField.TEXT("Project Name"), MP.ModalButton.OK_CANCEL("Create", "Close"));
+  const txtProjectName = newProjectWindows.fields["Project Name"];
+  newProjectWindows.okButton.onclick = () => {
+    let projectInsertRequest = new XMLHttpRequest();
+    projectInsertRequest.onload = () => {
+      const response = encodeSafeJSON(projectInsertRequest.responseText);
 
-btnClose.onclick = function () {
-  newProjectContainer.classList.remove("open-popup");
-}
+      switch (response.code) {
+        case 1:
+          const project = response.data;
+          const projectRow = tableBody.insertRow(-1);
+          const projectCell = projectRow.insertCell(0);
 
-btnCreate.onclick = function () {
-  createProject(txtProjectName.value);
-  btnClose.click();
-}
+          projectCell.setAttribute("project_id", project.id);
+          projectCell.innerHTML = project.name;
+          projectRow.onclick = () => open(`project.html?id=${project.id}`, "_self");
+          newProjectWindows.close();
+          break;
+        case 2:
+          MP.show("Failed", MP.ModalContent.TEXT(response.data), MP.ModalField.NONE, MP.ModalButton.REFUSE("Close"), MP.ModalPopup.ERROR_BODY);
+          break;
+        default:
+          MP.show("Error", MP.ModalContent.TEXT("An unknown error occurred. Please try again later."), MP.ModalField.NONE, MP.ModalButton.REFUSE("Close"), MP.ModalPopup.ERROR_BODY);
+          break;
+      }
+    }
 
-btnLogout.onclick = () => {logout("index.html", "", [projectSection, accountSection])}
+    const formData = new FormData();
+    formData.set("method", "insertProject");
+    formData.append("args[]", txtProjectName.value);
+
+    projectInsertRequest.open("POST", `projects.php`);
+    projectInsertRequest.send(formData);
+  }
+}
 
 function loadProjects() {
   let projectsRequest = new XMLHttpRequest();
-  projectsRequest.onload = function () {
-    let response = JSON.parse(this.responseText);
+  projectsRequest.onload = () => {
+    let response = encodeSafeJSON(projectsRequest.responseText);
 
     switch (response.code) {
       case 1:
         let projects = response.data;
         let tableBody = tableProject.getElementsByTagName("tbody")[0];
 
-        for (let i = 0; i < projects.length; i++) {
+        for (let project of projects) {
           let projectRow = tableBody.insertRow(-1);
           let projectCell = projectRow.insertCell(0);
-          projectCell.setAttribute("projectid", projects[i].id);
-          projectCell.innerHTML = projects[i].name;
+          projectCell.setAttribute("project_id", project.id);
+          projectCell.innerHTML = project.name;
           projectRow.onclick = function () {
-            open(`project.html?id=${projects[i].id}`, "_self");
+            open(`project.html?id=${project.id}`, "_self");
           }
         }
         break;
       case 2:
-        alert(response.data);
+        MP.show(response.title, MP.ModalContent.TEXT(response.data), MP.ModalField.NONE, MP.ModalButton.REFUSE("Close"), MP.ModalPopup.ERROR_BODY);
         break;
       default:
-        alert("An unknown error occurred. Please try again later!");
+        MP.show(response.title, MP.ModalContent.TEXT("An unknown error occurred. Please try again later!"), MP.ModalField.NONE, MP.ModalButton.REFUSE("Close"), MP.ModalPopup.ERROR_BODY);
         break;
     }
   }
 
-  projectsRequest.open("GET", "projects.php?method=getAllProjects");
-  projectsRequest.send();
+  const formData = new FormData();
+  formData.set("method", "getAllProjects");
+  formData.append("args[]", "");
+
+  projectsRequest.open("POST", "projects.php");
+  projectsRequest.send(formData);
 }
 
-function createProject(projectName) {
-  let projectInsertRequest = new XMLHttpRequest();
-  projectInsertRequest.onload = function () {
-    let response = encodeSafeJSON(this.responseText);
+window.addEventListener("load", () => {
+  Auth.run().success(() => {
+    mainContainer.style.visibility = "visible";
+    loadProjects();
+  }).fail(() => {
 
-    switch (response.code) {
-      case 1:
-        let project = response.data;
-        let tableBody = tableProject.getElementsByTagName("tbody")[0];
-        let projectRow = tableBody.insertRow(-1);
-        let projectCell = projectRow.insertCell(0);
-
-        projectCell.setAttribute("projectid", project.id);
-        projectCell.innerHTML = project.name;
-        projectRow.onclick = function () {
-          open(`project.html?id=${project.id}`, "_self");
-        }
-        break;
-      case 2:
-        alert(response.data);
-        break;
-      default:
-        alert("An unknown error occurred. Please try again later!");
-        break;
-    }
-  }
-
-  projectInsertRequest.open("GET", `projects.php?method=insertProject&args=${projectName}`)
-  projectInsertRequest.send();
-}
-
-Array.from(tableProject.getElementsByTagName("tbody")[0].getElementsByTagName("tr")).forEach((row, index) => {
-  row.addEventListener('click', () => {
-    window.location = "project.html";
   });
-});
-
-auth("index.html", "", [projectSection, accountSection], [], [], []);
-loadProjects();
+})

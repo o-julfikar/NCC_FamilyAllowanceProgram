@@ -30,32 +30,83 @@
     <script>
       function downloadPDF() {
         var xhr = new XMLHttpRequest();
-        xhr.open('GET', 'generate_pdf.php', true); // Replace 'generate_pdf.php' with your PHP script URL
-        xhr.responseType = 'blob'; // Set response type to Blob (binary data)
+        var url = 'test.php';
+        var data = JSON.stringify({ key1: 'value1', key2: 'value2' });
 
-        xhr.onload = function () {
-          if (xhr.status === 200) {
-            // Create a Blob object from the response data
-            var blob = new Blob([xhr.response], {type: 'application/pdf'});
+        xhr.open('POST', url, true);
 
-            // Create a temporary URL for the Blob
-            var url = window.URL.createObjectURL(blob);
+// Set the Content-Type header to application/json
+        xhr.setRequestHeader('Content-Type', 'application/json');
 
-            // Create a link element to trigger the download
-            var a = document.createElement('a');
-            a.href = url;
-            a.target = "_blank";
-            // a.download = 'generated.pdf'; // Set the desired file name
-
-            // Trigger the download
-            a.click();
-
-            // Release the temporary URL
-            window.URL.revokeObjectURL(url);
+        xhr.onreadystatechange = function () {
+          if (xhr.readyState === 4) {
+            if (xhr.status === 200) {
+              // Handle a successful response
+              var response = JSON.parse(xhr.responseText);
+              console.log(response);
+            } else {
+              // Handle errors (e.g., xhr.status !== 200)
+              console.error('XHR Error:', xhr.status);
+            }
           }
         };
 
-        xhr.send();
+        xhr.onerror = function () {
+          // Handle network errors
+          console.error('XHR Network Error');
+        };
+
+        xhr.ontimeout = function () {
+          // Handle timeout errors
+          console.error('XHR Timeout Error');
+        };
+
+        xhr.send(data);
+
+
+
+        // let xhr = new XMLHttpRequest();
+        // xhr.onload = () => {
+        //   console.log(xhr.responseText);
+        // }
+        //
+        // let formdata = new FormData();
+        // formdata.append("hello", "world");
+        // formdata.set("python", "Java");
+        // formdata.set("object", "class");
+        // formdata.append("hello", "spider");
+        //
+        // xhr.open("POST", "test.php");
+        // xhr.send(formdata);
+
+
+        // var xhr = new XMLHttpRequest();
+        // xhr.open('GET', 'generate_pdf.php', true); // Replace 'generate_pdf.php' with your PHP script URL
+        // xhr.responseType = 'blob'; // Set response type to Blob (binary data)
+        //
+        // xhr.onload = function () {
+        //   if (xhr.status === 200) {
+        //     // Create a Blob object from the response data
+        //     var blob = new Blob([xhr.response], {type: 'application/pdf'});
+        //
+        //     // Create a temporary URL for the Blob
+        //     var url = window.URL.createObjectURL(blob);
+        //
+        //     // Create a link element to trigger the download
+        //     var a = document.createElement('a');
+        //     a.href = url;
+        //     a.target = "_blank";
+        //     // a.download = 'generated.pdf'; // Set the desired file name
+        //
+        //     // Trigger the download
+        //     a.click();
+        //
+        //     // Release the temporary URL
+        //     window.URL.revokeObjectURL(url);
+        //   }
+        // };
+        //
+        // xhr.send();
       }
     </script>
   </body>

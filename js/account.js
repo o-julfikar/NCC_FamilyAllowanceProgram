@@ -1,9 +1,9 @@
-import {auth} from "./auth.js";
+import {Auth} from "./Authenticator.js";
 
-function logout(successLocation="index.html", failLocation="", objectsToAppearIfSuccess=[], objectsToDisappearIfSuccess=[], objectsToAppearIfFail=[], objectsToDisappearIfFail=[]) {
+function logout() {
     let logoutRequest = new XMLHttpRequest();
     logoutRequest.onload = function () {
-      auth(successLocation, failLocation, objectsToAppearIfSuccess, objectsToDisappearIfSuccess, objectsToAppearIfFail, objectsToDisappearIfFail);
+      Auth.run();
     };
 
     logoutRequest.open("GET", "logout.php");

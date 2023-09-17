@@ -3,9 +3,9 @@
   include "connect.php";
   session_start();
 
-  function authenticate() {
+  function authenticate(): array {
     global $conn;
-    if (isset($conn) && isset($_SESSION["session_key"]) && isset($_SESSION["user_id"])) {
+    if (isset($_SESSION["session_key"]) && isset($_SESSION["user_id"])) {
       $user_id = $_SESSION["user_id"];
       $session_key = $_SESSION["session_key"];
 
@@ -24,32 +24,35 @@
 
           if ($user_row = mysqli_fetch_assoc($result_user)) {
             if ($user_row['Status'] > 0) {
-              return (array(
+              return [
                 "code" => 1,
-                "data" => array(
+                "data" => [
                   "id" => $user_row["ID"],
                   "name" => $user_row["Name"],
                   "role" => $user_row["Role"],
                   "status" => $user_row["Status"]
-                )
-              ));
+                ]
+              ];
             } else {
-              return (array(
-                "code" => 2,
-                "data" => "Your account is not activated. Please try again later!"
-              ));
+              return [
+                "code" => -2,
+                "data" => "Your account is not activated. Please try again later!",
+                "title" => "Account Inactive"
+              ];
             }
           }
         } else {
-          return (array(
-            "code" => 2,
-            "data" => "Session expired"
-          ));
+          return [
+            "code" => -3,
+            "data" => "Session expired",
+            "title" => "Session Expired"
+          ];
         }
       }
     }
-    return (array(
+    return [
       "code" => 0,
-      "data" => null
-    ));
+      "data" => "No active sessions",
+      "title" => "Error"
+    ];
   }

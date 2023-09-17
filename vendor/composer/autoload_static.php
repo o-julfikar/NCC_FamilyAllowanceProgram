@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit4ed5f9fe91b9a997c546aff54edb9f72
+class ComposerStaticInit6f3e42f94aeabf3405f8708763b5b5ae
 {
     public static $files = array (
         '6124b4c8570aa390c21fafd04a26c69f' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
@@ -85,9 +85,9 @@ class ComposerStaticInit4ed5f9fe91b9a997c546aff54edb9f72
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit4ed5f9fe91b9a997c546aff54edb9f72::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit4ed5f9fe91b9a997c546aff54edb9f72::$prefixDirsPsr4;
-            $loader->classMap = ComposerStaticInit4ed5f9fe91b9a997c546aff54edb9f72::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit6f3e42f94aeabf3405f8708763b5b5ae::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit6f3e42f94aeabf3405f8708763b5b5ae::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit6f3e42f94aeabf3405f8708763b5b5ae::$classMap;
 
         }, null, ClassLoader::class);
     }

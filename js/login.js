@@ -1,81 +1,108 @@
-import {auth} from "./auth.js";
-import * as MsgBox from "./popup-engine.js";
+import {Auth} from "./Authenticator.js";
+import * as MP from "./ModalPopup.js";
+import {encodeSafeJSON} from "./json-engine.js";
 
-let containerMain = document.getElementsByClassName("main")[0];
+let mainContainer = document.getElementsByClassName("main")[0];
 let txtEmail = document.getElementById("txtEmail");
 let txtPassword = document.getElementById("txtPass");
 let txtName = document.getElementById("txtName");
 let txtConfirm = document.getElementById("txtConfirmPassword");
 let btnLogin = document.getElementById("btnLogin");
 let loginContainer = document.getElementsByClassName("login-container")[0];
+const accountRequest = new XMLHttpRequest();
 
+btnLogin.onclick = login;
+
+accountRequest.onload = () => {
+  const response = encodeSafeJSON(accountRequest.responseText);
+  switch (response.code) {
+    case 0:
+      txtName.hidden = false;
+      txtConfirm.hidden = false;
+      btnLogin.innerHTML = "Register";
+      break;
+    case 1:
+      open("dashboard.html", "_self");
+      break;
+    case 12:
+      txtName.hidden = true;
+      txtConfirm.hidden = true;
+      btnLogin.innerHTML = "Login";
+      /* FALLTHROUGH */
+    case -1:
+    case 2:
+      MP.show(response.title, MP.ModalContent.TEXT(response.data), MP.ModalField.NONE, MP.ModalButton.REFUSE("Close"), MP.ModalPopup.ERROR_BODY);
+      break;
+    default:
+      MP.show("Error", MP.ModalContent.TEXT("An unknown error occurred. Please try again later!"), MP.ModalField.NONE, MP.ModalButton.REFUSE("Try again"), MP.ModalPopup.ERROR_BODY);
+      break;
+  }
+};
 
 function login() {
-  if (btnLogin.innerHTML === "Login") {
-    let loginRequest = new XMLHttpRequest();
-    loginRequest.onload = function () {
-      let response = this.responseText;
+  const mandatoryFields = [txtEmail, txtPassword];
+  const emptyFields = [];
 
-      if (response === "-1") {
-        // alert("Incorrect email or password.");
-        MsgBox.showPopup(containerMain, "Invalid Login", "Incorrect email or password.", MsgBox.FIELDS(), MsgBox.BUTTONS.CANCEL("Try Again!"));
-      } else if (response === "0") {
-        txtName.hidden = false;
-        txtConfirm.hidden = false;
-        btnLogin.innerHTML = "Register";
-      } else if (response === "1") {
-        open("./dashboard.html", "_self");
-      } else {
-        alert("An unknown error occurred. Please try again later!");
-      }
-    };
+  for (let field of mandatoryFields) if (!field.hidden && !field.value) emptyFields.push("- " + field.placeholder);
 
-    loginRequest.open(
-      "GET", "login.php?" +
-      "email=" + txtEmail.value +
-      "&password=" + txtPassword.value
-    );
-
-    loginRequest.send();
-  } else if (btnLogin.innerHTML === "Register") {
-
-    if (txtPassword.value !== txtConfirm.value) {
-      alert("Passwords do not match!");
-      return;
-    }
-
-    let registerRequest = new XMLHttpRequest();
-    registerRequest.onload = function () {
-      let response = this.responseText;
-      console.log(response);
-      if (response === "-1") {
-        txtName.value = "";
-        txtConfirm.value = "";
-        txtName.hidden = true;
-        txtConfirm.hidden = true;
-        btnLogin.innerHTML = "Login";
-        alert("User already exists. Please login!");
-      } else if (response === "0") {
-        alert("Registration failed! Please check the validation of entered information and try again!");
-      } else if (response === "1") {
-        open("./dashboard.html", "_self");
-      } else {
-        alert("An unknown error occurred. Please try again later!");
-      }
-    };
-
-    registerRequest.open(
-      "GET", "register.php?" +
-      "name=" + txtName.value +
-      "&email=" + txtEmail.value +
-      "&password=" + txtPassword.value
-    )
-
-    registerRequest.send();
+  if (emptyFields.length) {
+    MP.show(
+      "Mandatory Fields",
+      MP.ModalContent.N_TEXTS("The following fields must not be empty:", ...emptyFields),
+      MP.ModalField.NONE,
+      MP.ModalButton.REFUSE("Close"),
+      MP.ModalPopup.ERROR_BODY);
   } else {
-    alert("Modifications are not allowed!");
+    if (btnLogin.innerHTML === "Login") {
+      const loginData = new FormData();
+      loginData.set("email", txtEmail.value);
+      loginData.set("password", txtPassword.value);
+      loginData.set("method", "login");
+      loginData.set("submit", "");
+      accountRequest.open("POST", "login.php");
+      accountRequest.send(loginData);
+    } else if (btnLogin.innerHTML === "Register") {
+      const registerData = new FormData();
+      registerData.set("name", txtName.value);
+      registerData.set("email", txtEmail.value);
+      registerData.set("password", txtPassword.value);
+      registerData.set("method", "register");
+      registerData.set("submit", "");
+      accountRequest.open("POST", "login.php");
+
+      if (txtPassword.value !== txtConfirm.value) {
+        const mismatchPasswordDialogue = MP.show(
+          "Passwords Mismatched",
+          MP.ModalContent.SINGLE_ROW_TABLE(
+            ...Object.entries({"Password": txtPassword.value, "Confirm Password": txtConfirm.value})
+              .map(([header, cell]) => MP.ModalContent.SINGLE_ROW_TABLE_COLUMN(header, cell))),
+          MP.ModalField.NONE,
+          MP.ModalButton.OK_REFUSE_CANCEL("Register (using First Password)", "Register (using Confirm Password)"),
+          MP.ModalPopup.ERROR_BODY);
+
+        mismatchPasswordDialogue.okButton.addEventListener("click", () => {
+          // Register with first password
+          accountRequest.send(registerData);
+        });
+
+        mismatchPasswordDialogue.refuseButton.addEventListener("click", () => {
+          // Register with confirm password
+          registerData.set("password", txtConfirm.value);
+          accountRequest.send(registerData);
+        });
+      } else {
+        accountRequest.send(registerData);
+      }
+    } else {
+      MP.show("Forbidden", MP.ModalContent.TEXT("Modifications are not allowed"), MP.ModalField.NONE, MP.ModalButton.REFUSE("Close"), MP.ModalPopup.ERROR_BODY);
+    }
   }
 }
 
-btnLogin.onclick = login;
-auth("", "dashboard.html", [], [], [loginContainer], []);
+window.addEventListener("load", () => {
+  Auth.run().success(() => {
+    open("dashboard.html", "_self");
+  }).fail(() => {
+    mainContainer.style.visibility = "visible";
+  });
+})
